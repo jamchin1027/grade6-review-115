@@ -12,7 +12,7 @@ window.LESSONS = [
 ];
 
 window.EXAMS = {
- 'chi-quiz': {title:'字詞與閱讀挑戰',subject:'國語',desc:'從景物、人物選擇和說明文線索練習閱讀理解。',questions:[...window.LESSONS[0].questions,...window.LESSONS[1].questions,...window.LESSONS[3].questions,...window.LESSONS[4].questions,...window.LESSONS[5].questions]},
+ 'chi-quiz': {title:'字詞與閱讀挑戰',subject:'國語',desc:'從景物、人物選擇和說明文線索練習閱讀理解。',questions:[...window.LESSONS[0].questions,...window.LESSONS[1].questions,...window.LESSONS[2].questions,...window.LESSONS[3].questions,...window.LESSONS[4].questions,...window.LESSONS[5].questions]},
  'sci-quiz': {title:'實驗室解謎',subject:'自然',desc:'看懂天氣線索、水溶液和公平實驗。',questions:[...window.LESSONS[6].questions,...window.LESSONS[7].questions]},
  'soc-quiz': {title:'時間線守護隊',subject:'社會',desc:'用時間、因果、多元觀點解開歷史與公民問題。',questions:[...window.LESSONS[8].questions,...window.LESSONS[9].questions]},
  'mix-quiz': {title:'三科混合大冒險',subject:'混合',desc:'隨機抽題，一起練閱讀、科學推理和公民思考！',questions:window.LESSONS.flatMap(x=>x.questions)}
