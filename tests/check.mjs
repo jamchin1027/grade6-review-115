@@ -1,0 +1,63 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+
+const main = {innerHTML:''}, wrongCount={textContent:''};
+const saved = new Map([['review-island-115-v1',JSON.stringify({done:{'chi-1':true},stats:{'chi-1':{seen:2,correct:1}},wrong:{},streak:2,totalAnswered:2,totalCorrect:1})]]);
+const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(){}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history:{replaceState(){}},requestAnimationFrame:fn=>fn()};
+context.window=context;context.addEventListener=()=>{};context.scrollTo=()=>{};
+vm.createContext(context);
+for(const file of ['data.js','bank.js','practice.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+const run=code=>vm.runInContext(code,context);
+const {QUESTION_BANK:bank,PAPERS:papers,LESSONS:lessons,DRILL:drill}=context;
+assert.equal(bank.length,181);
+assert.equal(bank.filter(q=>q.sourceId).length,160);
+assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
+assert.equal(new Set(bank.map(q=>q.q)).size,bank.length);
+for(const q of bank){
+  assert.equal(q.options.length,4,q.id);
+  assert.equal(new Set(q.options).size,4,q.id);
+  assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<4,q.id);
+  assert.ok(q.explain.length>10,q.id);
+  assert.ok(lessons.some(l=>l.id===q.lessonId),q.id);
+  if(q.sourceId){assert.ok(papers.some(p=>p.id===q.sourceId),q.id);assert.ok(q.sourceRef,q.id);}
+  for(let i=0;i<20;i++){const mixed=drill.options(q);assert.equal(mixed.options[mixed.answer],q.options[q.answer],q.id);assert.equal(new Set(mixed.options).size,4,q.id);}
+}
+const seen=Object.fromEntries(bank.slice(0,100).map(q=>[q.id,true]));
+const picked=drill.select([...bank,bank[0]],90,seen);
+assert.equal(picked.length,90);assert.equal(new Set(picked.map(q=>q.id)).size,90);
+assert.ok(picked.slice(0,81).every(q=>!seen[q.id]));
+assert.ok(picked.slice(81).every(q=>seen[q.id]));
+assert.equal(drill.select(bank,1000,seen).length,181);
+assert.equal(run('data.totalAnswered'),2,'old progress survives');
+assert.equal(run('data.done["chi-1"]'),true);
+assert.ok(run('data.seen && typeof data.seen==="object"'));
+run("startExam('test',[QUESTION_BANK[0]],'國語','測試','mock');answer(session.items[0].answer)");
+assert.ok(!main.innerHTML.includes('class="explain'),'mock hides explanation');
+assert.ok(!main.innerHTML.includes('option correct'),'mock hides correct marker');
+assert.ok(!main.innerHTML.includes('答對 1 題'),'mock hides score');
+assert.ok(main.innerHTML.includes('答案已記錄'));
+run('finishExam()');
+assert.ok(main.innerHTML.includes('正確答案：'));
+assert.ok(main.innerHTML.includes('這回合的答案與解析'));
+assert.equal(run('Object.keys(data.seen).length'),1);
+run("startExam('test',[QUESTION_BANK.find(q=>q.sourceId)],'國語','測試');answer((session.items[0].answer+1)%4)");
+assert.ok(main.innerHTML.includes('class="explain'));
+assert.ok(main.innerHTML.includes('對照原卷'));
+assert.equal(run('Object.values(data.wrong).flat().length'),1);
+run("beginNamedExam('wrong-quiz');answer(session.items[0].answer)");
+assert.equal(run('Object.values(data.wrong).flat().length'),0,'wrong-answer remapping survives shuffled options');
+run("beginLessonTest('chi-3')");assert.equal(run('session.items.length'),12);
+run("beginNamedExam('chi-quiz')");assert.equal(run('session.items.length'),20);
+run("beginNamedExam('paper:jg108-sci')");assert.ok(run("session.items.every(q=>q.lessonId==='sci-2')"));
+run('beginDailyExam()');assert.equal(run('session.items.length'),5);
+assert.equal(run("drillPool({subject:'自然',lesson:'sci-2',school:'全部'}).length"),33);
+assert.equal(run("drillPool({subject:'國語',lesson:'sci-2',school:'全部'}).length"),0);
+assert.ok(main.innerHTML.includes('第 1 題 / 5 題'));
+const previousBadge=wrongCount.textContent;
+run("startExam('test',[QUESTION_BANK[50]],'國語','測試','mock');answer((session.items[0].answer+1)%4)");
+assert.equal(wrongCount.textContent,previousBadge,'mock wrong-count badge must not leak correctness');
+assert.ok(!main.innerHTML.includes('option correct'));
+run('finishExam()');
+assert.equal(Number(wrongCount.textContent),run('Object.values(data.wrong).flat().length'));
+console.log(`PASS: ${bank.length} unique questions, answer remapping, source references, unseen-first selection, progress migration, mock privacy, practice, retry, scope filters.`);
