@@ -7,10 +7,10 @@ const saved = new Map([['review-island-115-v1',JSON.stringify({done:{'chi-1':tru
 const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(){}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history:{replaceState(){}},requestAnimationFrame:fn=>fn()};
 context.window=context;context.addEventListener=()=>{};context.scrollTo=()=>{};
 vm.createContext(context);
-for(const file of ['data.js','bank.js','vocab-data.js','vocab.js','practice.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+for(const file of ['data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','practice.js','quiz.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
 const run=code=>vm.runInContext(code,context);
 const {QUESTION_BANK:bank,PAPERS:papers,LESSONS:lessons,DRILL:drill}=context;
-assert.equal(bank.length,391);
+assert.equal(bank.length,511);
 assert.equal(bank.filter(q=>q.sourceId).length,160);
 assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
 assert.equal(new Set(bank.map(q=>q.q)).size,bank.length);
@@ -23,12 +23,12 @@ for(const q of bank){
   if(q.sourceId){assert.ok(papers.some(p=>p.id===q.sourceId),q.id);assert.ok(q.sourceRef,q.id);}
   for(let i=0;i<20;i++){const mixed=drill.options(q);assert.equal(mixed.options[mixed.answer],q.options[q.answer],q.id);assert.equal(new Set(mixed.options).size,4,q.id);}
 }
-const seen=Object.fromEntries(bank.slice(0,310).map(q=>[q.id,true]));
+const seen=Object.fromEntries(bank.slice(0,430).map(q=>[q.id,true]));
 const picked=drill.select([...bank,bank[0]],90,seen);
 assert.equal(picked.length,90);assert.equal(new Set(picked.map(q=>q.id)).size,90);
 assert.ok(picked.slice(0,81).every(q=>!seen[q.id]));
 assert.ok(picked.slice(81).every(q=>seen[q.id]));
-assert.equal(drill.select(bank,1000,seen).length,391);
+assert.equal(drill.select(bank,1000,seen).length,511);
 assert.equal(run('data.totalAnswered'),2,'old progress survives');
 assert.equal(run('data.done["chi-1"]'),true);
 assert.ok(run('data.seen && typeof data.seen==="object"'));
@@ -93,4 +93,61 @@ run("vocabCover=true;renderVocab('chi-1')");
 assert.equal((main.innerHTML.match(/待默寫的生字/g)||[]).length,10);
 assert.ok(main.innerHTML.includes('<h3>涼□</h3>'));
 assert.ok(main.innerHTML.includes('細小的□土。'));
-console.log(`PASS: ${bank.length} unique questions, answer remapping, source references, unseen-first selection, progress migration, mock privacy, practice, retry, scope filters; 105 vocabulary entries, 210 exercises, covered answers and quiz retakes.`);
+// Back/forward restores the original shuffled options and first practice response.
+run("startExam('nav',QUESTION_BANK.slice(0,3),'國語','導航')");
+const beforePractice=run('data.totalAnswered');
+run('answer(session.items[0].answer)');
+const firstOptions=run('JSON.stringify(session.items[0].options)'),firstChoice=run('session.selected');
+run('goQuestion(1);answer((session.items[1].answer+1)%4);goQuestion(0)');
+assert.equal(run('session.selected'),firstChoice);
+assert.equal(run('JSON.stringify(session.items[0].options)'),firstOptions);
+run('answer((session.items[0].answer+1)%4)');
+assert.equal(run('data.totalAnswered'),beforePractice+2,'practice revisit cannot score again');
+assert.equal(run('session.correct'),1);
+run('goQuestion(-1)');assert.equal(run('session.index'),0);
+run('goQuestion(999)');assert.equal(run('session.index'),0);
+run('finishExam()');assert.equal(run('session.index'),2,'incomplete submission goes to missing question');
+assert.equal(run('session.finished'),false);
+assert.ok(main.innerHTML.includes('還有題目沒作答'));
+run('answer(session.items[2].answer);finishExam();finishExam()');
+assert.equal(run('data.totalAnswered'),beforePractice+3,'repeated finish is idempotent');
+// Mock edits stay private and are committed only once, using the final selections.
+run("startExam('mock-nav',ENGLISH_QUESTIONS.slice(0,3),'英文','期中','mock')");
+const beforeMock=run('JSON.stringify(data)'),mockBadge=wrongCount.textContent;
+run('answer((session.items[0].answer+1)%4);goQuestion(2);answer(session.items[2].answer);goQuestion(0);answer(session.items[0].answer)');
+assert.equal(run('JSON.stringify(data)'),beforeMock,'unsubmitted mock does not alter stats or mistakes');
+assert.equal(wrongCount.textContent,mockBadge);
+assert.ok(!main.innerHTML.includes('class="explain'));
+assert.ok(!main.innerHTML.includes('option correct'));
+assert.ok(!main.innerHTML.includes('本課生字來源'));
+assert.ok(main.innerHTML.includes('可修改'));
+run('finishExam()');assert.equal(run('session.index'),1);
+run('answer(session.items[1].answer);finishExam()');
+assert.equal(run('session.correct'),3);
+assert.equal(run('data.totalAnswered'),JSON.parse(beforeMock).totalAnswered+3);
+assert.equal(run('data.totalCorrect'),JSON.parse(beforeMock).totalCorrect+3);
+run('finishExam()');assert.equal(run('data.totalAnswered'),JSON.parse(beforeMock).totalAnswered+3);
+assert.ok(main.innerHTML.includes('換你試試'));
+// English has per-option feedback, not letter-index feedback that breaks on shuffle.
+assert.equal(context.ENGLISH_QUESTIONS.length,120);
+assert.equal(context.ENGLISH_WORDS.length,18);
+for(const q of context.ENGLISH_QUESTIONS){
+  for(const o of q.options)assert.ok(q.optionFeedback[o]?.length>12,q.id+' '+o);
+  assert.ok(q.clue&&q.rule&&q.tryIt&&q.curriculumUrl);
+  const mixed=drill.options(q);for(const o of mixed.options)assert.equal(mixed.optionFeedback[o],q.optionFeedback[o]);
+}
+assert.equal(run("englishQuizPool('eng-1','全部').length"),62);
+assert.equal(run("englishQuizPool('eng-2','全部').length"),58);
+assert.equal(run("englishQuizPool('all','英文發音').length"),8);
+run("launchEnglishExam('all','英文發音','全部','practice')");assert.equal(run('session.items.length'),8);
+run("beginNamedExam('english:eng-2:英文單字:10:mock')");assert.equal(run('session.items.length'),10);assert.equal(run('session.mode'),'mock');
+assert.ok(run("session.items.every(q=>q.lessonId==='eng-2'&&q.skill==='英文單字')"));
+run("startExam('feedback',[ENGLISH_QUESTIONS.find(q=>q.id==='english-swim-did')],'英文','錯因');answer(session.items[0].options.indexOf('swam'))");
+assert.ok(main.innerHTML.includes('不能把兩處都改成過去式'));
+run('renderMistakes()');assert.ok(main.innerHTML.includes('不能把兩處都改成過去式'),'mistake chest retains selected-option reasoning');
+run("renderEnglish('eng-1')");assert.ok(main.innerHTML.includes('句子變身工坊'));assert.equal((main.innerHTML.match(/class="english-word"/g)||[]).length,10);
+run("renderEnglish('eng-2')");assert.equal((main.innerHTML.match(/class="english-word"/g)||[]).length,8);
+assert.equal(papers.length,9);assert.ok(papers.every(p=>p.kind!=='競賽'));
+assert.ok(!run('catalogHtml()').includes('慈濟'));
+assert.ok(!run('catalogHtml()').includes('進階競賽'));
+console.log(`PASS: ${bank.length} unique questions; 105 vocabulary entries; 120 English questions with option-specific feedback; back/forward, skipping, stable shuffled options, practice no double scoring, editable mock final scoring, incomplete/idempotent submit, old progress, source filters and competition removal.`);

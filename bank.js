@@ -13,7 +13,6 @@
     paper('na113-soc','彰化縣內安國小',113,'社會','1O43vSsu5ftvm2O-Iz0o-Obabu3LpJl_L','1Q_1ADJ3tAk9eQbzO3I9kGMTzuAKKIncp','日治時期、民主發展及政府分工。'),
     paper('gx113-soc','彰化縣二林鎮廣興國小',113,'社會','1PPPvAeGRBs308mI-egXhz9_Zfr6Pw-22','1fliZBgewVbh8DVFgTB0aD3sx_c8SM_PU','日治生活變遷、民主歷程與公民權利。'),
     {id:'jg108-sci',school:'新北市板橋區莒光國小',year:108,subject:'自然',grade:'五上',kind:'跨年級參考',url:'https://www.jges.ntpc.edu.tw/app/index.php?Action=downloadfile&file=WVhSMFlXTm9MekV4TDNCMFlWODBOelJmTWpJMU5EZ3lPRjg1Tnpnek1TNXdaR1k9&fname=WSGGDGA0YW1041ZX50POIGYWRKB4WT34YSB0WWHCA1QLWSTSWTFGLOEGECOKNOOKYWCCCD11VSPKDHDH',answerUrl:'',scope:'原卷是康軒五上第二次評量。僅參考水溶液考點；運動與力不納入。附答題紙並非解答。',checked:'2026-10-26'},
-    ...[115,114,113,112,111,110,109].map(year=>({id:`tzu${year}-chi`,school:'臺南慈濟高中（小六菁英盃）',year,subject:'國語',grade:'小六競賽',kind:'競賽',examDate:year===115?'2025 年 11 月 29 日':year===114?'2024 年 11 月 24 日':'',url:`https://www.tcsh.tn.edu.tw/files/teaching_affairs/${year}-chi.pdf`,answerUrl:`https://www.tcsh.tn.edu.tw/files/teaching_affairs/${year===109?'109-ans-m1111107':year+'-ans'}.pdf`,scope:'校方公開的進階國語競賽原卷與各科解答。不是慈濟國小校內段考，也不限定南一第 1–6 課；不計入本站刷題數。',checked:'2026-10-26'}))
   ];
   const add = (lessonId, sourceId, rows) => {
     const lesson = LESSONS.find(l => l.id === lessonId);
