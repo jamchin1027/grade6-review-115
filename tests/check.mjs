@@ -7,10 +7,10 @@ const saved = new Map([['review-island-115-v1',JSON.stringify({done:{'chi-1':tru
 const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(){}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history:{replaceState(){}},requestAnimationFrame:fn=>fn()};
 context.window=context;context.addEventListener=()=>{};context.scrollTo=()=>{};
 vm.createContext(context);
-for(const file of ['data.js','bank.js','practice.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+for(const file of ['data.js','bank.js','vocab-data.js','vocab.js','practice.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
 const run=code=>vm.runInContext(code,context);
 const {QUESTION_BANK:bank,PAPERS:papers,LESSONS:lessons,DRILL:drill}=context;
-assert.equal(bank.length,181);
+assert.equal(bank.length,391);
 assert.equal(bank.filter(q=>q.sourceId).length,160);
 assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
 assert.equal(new Set(bank.map(q=>q.q)).size,bank.length);
@@ -23,12 +23,12 @@ for(const q of bank){
   if(q.sourceId){assert.ok(papers.some(p=>p.id===q.sourceId),q.id);assert.ok(q.sourceRef,q.id);}
   for(let i=0;i<20;i++){const mixed=drill.options(q);assert.equal(mixed.options[mixed.answer],q.options[q.answer],q.id);assert.equal(new Set(mixed.options).size,4,q.id);}
 }
-const seen=Object.fromEntries(bank.slice(0,100).map(q=>[q.id,true]));
+const seen=Object.fromEntries(bank.slice(0,310).map(q=>[q.id,true]));
 const picked=drill.select([...bank,bank[0]],90,seen);
 assert.equal(picked.length,90);assert.equal(new Set(picked.map(q=>q.id)).size,90);
 assert.ok(picked.slice(0,81).every(q=>!seen[q.id]));
 assert.ok(picked.slice(81).every(q=>seen[q.id]));
-assert.equal(drill.select(bank,1000,seen).length,181);
+assert.equal(drill.select(bank,1000,seen).length,391);
 assert.equal(run('data.totalAnswered'),2,'old progress survives');
 assert.equal(run('data.done["chi-1"]'),true);
 assert.ok(run('data.seen && typeof data.seen==="object"'));
@@ -47,7 +47,7 @@ assert.ok(main.innerHTML.includes('對照原卷'));
 assert.equal(run('Object.values(data.wrong).flat().length'),1);
 run("beginNamedExam('wrong-quiz');answer(session.items[0].answer)");
 assert.equal(run('Object.values(data.wrong).flat().length'),0,'wrong-answer remapping survives shuffled options');
-run("beginLessonTest('chi-3')");assert.equal(run('session.items.length'),12);
+run("beginLessonTest('chi-3')");assert.equal(run('session.items.length'),50);
 run("beginNamedExam('chi-quiz')");assert.equal(run('session.items.length'),20);
 run("beginNamedExam('paper:jg108-sci')");assert.ok(run("session.items.every(q=>q.lessonId==='sci-2')"));
 run('beginDailyExam()');assert.equal(run('session.items.length'),5);
@@ -60,4 +60,37 @@ assert.equal(wrongCount.textContent,previousBadge,'mock wrong-count badge must n
 assert.ok(!main.innerHTML.includes('option correct'));
 run('finishExam()');
 assert.equal(Number(wrongCount.textContent),run('Object.values(data.wrong).flat().length'));
-console.log(`PASS: ${bank.length} unique questions, answer remapping, source references, unseen-first selection, progress migration, mock privacy, practice, retry, scope filters.`);
+const inventories=['爽塵垢鳳頁曝涉霾暈跡','栽茂藤蔓掀悉添免隙尚櫃稿顫暮肩絨咂瀉賴','舍皆緣蓬飧兼樽酒舊醅籬簡陋鎮濾潺笆寂陳','衫肌沸騰兀唯勺吶握抵置頒屬榮搞黝襯惹摟','載益副監噪避迅滅援燒液蝕觸承陌攝檔撈註','艇劃荒垠宇宙朽誌系訓械艙駕凌隕眺奪億征'];
+assert.equal(context.VOCAB_WORDS.length,105);
+assert.equal(context.VOCAB_QUESTIONS.length,210);
+inventories.forEach((chars,i)=>{
+  const words=context.VOCAB_WORDS.filter(w=>w.lessonId===`chi-${i+1}`);
+  assert.equal(words.map(w=>w.char).join(''),chars,'verified lesson membership');
+  run(`renderVocab('chi-${i+1}')`);
+  assert.equal((main.innerHTML.match(/class="vocab-card"/g)||[]).length,chars.length);
+});
+for(const w of context.VOCAB_WORDS){
+  const qs=context.VOCAB_QUESTIONS.filter(q=>q.vocabId===w.id);
+  assert.equal(qs.length,2);
+  assert.equal(qs[0].options[qs[0].answer],w.reading);
+  assert.equal(qs[1].options[qs[1].answer],w.char);
+  assert.ok(!qs[1].q.includes(w.char),`character prompt must not reveal answer: ${w.word}`);
+  assert.ok(qs.every(q=>q.referenceUrl===w.sourceUrl&&!q.sourceId));
+}
+for(const [skill,count] of [['生字注音',105],['生字國字',105],['閱讀與概念',181]]){
+  assert.equal(run(`drillPool({subject:'全部',lesson:'全部',school:'全部',skill:'${skill}'}).length`),count);
+}
+assert.equal(run("drillPool({subject:'全部',lesson:'全部',school:'原創概念題'}).length"),21);
+run("launchVocabExam('chi-1','sound','10')");
+assert.equal(run('session.items.length'),10);
+assert.ok(run("session.items.every(q=>q.lessonId==='chi-1'&&q.skill==='生字注音')"));
+run('answer(session.items[0].answer)');assert.ok(main.innerHTML.includes('本課生字來源'));
+run("beginNamedExam('vocab:chi-1:sound:10')");assert.equal(run('session.items.length'),10);
+run("launchVocabExam('all','char','全部')");
+assert.equal(run('session.items.length'),105);
+assert.ok(run("session.items.every(q=>q.skill==='生字國字')"));
+run("vocabCover=true;renderVocab('chi-1')");
+assert.equal((main.innerHTML.match(/待默寫的生字/g)||[]).length,10);
+assert.ok(main.innerHTML.includes('<h3>涼□</h3>'));
+assert.ok(main.innerHTML.includes('細小的□土。'));
+console.log(`PASS: ${bank.length} unique questions, answer remapping, source references, unseen-first selection, progress migration, mock privacy, practice, retry, scope filters; 105 vocabulary entries, 210 exercises, covered answers and quiz retakes.`);

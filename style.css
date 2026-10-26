@@ -38,3 +38,22 @@ select:focus-visible{outline:3px solid #729b74;outline-offset:2px}
 .review-item.is-wrong{border-left-color:#bd7b38}.review-item h3{font-size:18px;margin:10px 0}.review-item p{margin:7px 0}
 @media(max-width:900px){.drill-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.drill-panel{padding:18px}.drill-fields,.catalog-filters,.paper-grid{grid-template-columns:1fr}.drill-start{align-items:stretch;flex-direction:column}.bank-count{font-size:30px}.paper-card{padding:18px}.paper-tags{flex-direction:column;gap:6px}.review-item{padding:18px}.drill-panel .section-header{display:block}.bank-count{display:none}}
+
+/* Curriculum vocabulary notebook. */
+.vocab-banner{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:24px 30px;background:#eaf0dc;border:1px solid #d4dec4;border-radius:18px;margin:26px 0 36px}
+.vocab-banner h2{margin:7px 0;font-size:26px}.vocab-banner p{margin:8px 0;line-height:1.8;color:#53634c}.vocab-banner .button{flex-shrink:0}
+.vocab-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:0 0 24px}
+.vocab-tab{display:flex;flex-direction:column;gap:6px;padding:14px 12px;border-radius:12px;border:1px solid #cdd9c5;color:#426043;text-decoration:none;font-size:13px}
+.vocab-tab span{font-size:14px;font-weight:700;line-height:1.6}.vocab-tab.active{background:#234e3d;color:#fff;border-color:#234e3d}
+.vocab-workbench{display:grid;grid-template-columns:1fr 1fr;gap:28px;background:#edf3e7;padding:26px;border-radius:18px;margin-bottom:24px}
+.vocab-workbench h2{margin:0 0 12px;font-size:24px}.vocab-workbench p{line-height:1.9;color:#53634c}
+.cover-toggle{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;cursor:pointer;line-height:1.8}.cover-toggle input{width:20px;height:20px;accent-color:#315e42;flex-shrink:0}
+.vocab-quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-content:center}.vocab-quiz-options label{font-size:13px;font-weight:700;display:flex;flex-direction:column;gap:7px}.vocab-quiz-options .button{padding:12px 8px}
+.vocab-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:start}
+.vocab-card{background:#fff;border:1px solid #d7dfce;border-radius:16px;padding:22px;min-width:0}
+.vocab-glyph{font-family:'BiauKai','DFKai-SB','KaiTi',serif;font-size:68px;line-height:1.4;color:#244a34;text-align:center;background:linear-gradient(90deg,transparent 49.7%,#e3e7df 49.7%,#e3e7df 50.3%,transparent 50.3%),linear-gradient(transparent 49.7%,#e3e7df 49.7%,#e3e7df 50.3%,transparent 50.3%);border:1px solid #e3e7df;width:100px;height:100px;margin:0 auto 12px}
+.vocab-reading{font-size:22px;letter-spacing:2px;text-align:center;color:#567045;font-family:'BiauKai','DFKai-SB',sans-serif}.vocab-card h3{text-align:center;font-size:20px;margin:12px 0 6px}.vocab-card>p{font-size:14px;line-height:1.85;min-height:52px;color:#55654d}
+.vocab-card details{border-top:1px solid #e0e6d8;padding-top:13px;font-size:13px}.vocab-card summary{cursor:pointer;color:#285540;font-weight:700;line-height:1.8}.vocab-answer{line-height:1.9;padding-top:12px}.vocab-answer strong{font-size:22px;color:#254d35}.vocab-answer a,.vocab-source a{color:#24583c;text-underline-offset:4px}
+.vocab-source{background:#f0f2e9;border-radius:14px;padding:24px;margin:28px 0;line-height:1.9;font-size:14px}.lesson-vocab-link{margin:20px 0}
+@media(max-width:900px){.vocab-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.vocab-card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.vocab-workbench{grid-template-columns:1fr}.vocab-banner{align-items:flex-start}}
+@media(max-width:640px){.vocab-banner{flex-direction:column;padding:22px}.vocab-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.vocab-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.vocab-card{padding:16px 12px}.vocab-workbench{padding:20px}.vocab-reading{font-size:19px;letter-spacing:0}.vocab-glyph{width:85px;height:85px;font-size:58px}.vocab-quiz-options{grid-template-columns:1fr}.vocab-card>p{min-height:0}}

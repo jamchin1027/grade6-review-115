@@ -16,15 +16,16 @@ window.DRILL = {
     return [...this.shuffle(unseen, random), ...this.shuffle(old, random)].slice(0, count);
   }
 };
-let lastDrill = {subject:'全部', lesson:'全部', school:'全部', count:'20', mode:'practice'};
+let lastDrill = {subject:'全部', lesson:'全部', school:'全部', skill:'全部', count:'20', mode:'practice'};
 function sourceFor(q) { return PAPERS.find(p => p.id === q.sourceId); }
 function questionSourceHtml(q) {
   const p = sourceFor(q);
+  if(q.referenceUrl)return `<div class="question-source"><strong>${esc(q.origin)}</strong><br>南一 115 六上・教育雲生字表<br><a href="${esc(q.referenceUrl)}" target="_blank" rel="noopener noreferrer">本課生字來源 ↗</a> · <a href="${esc(q.dictionaryUrl)}" target="_blank" rel="noopener noreferrer">字典核對讀音 ↗</a></div>`;
   return `<div class="question-source"><strong>${esc(q.origin || '原創概念題')}</strong>${p ? `<br>參考：${esc(p.school)} · ${p.year} 學年度 · 原卷 ${esc(p.grade)}<br>${esc(q.sourceRef || '')}<br><a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">對照原卷 ↗</a>` : ''}</div>`;
 }
 function drillHtml() {
   const schools = [...new Set(PAPERS.filter(p => p.kind !== '競賽').map(p => p.school))];
-  return `<section class="drill-panel" aria-labelledby="drill-title"><div class="section-header"><div><span class="eyebrow">PRACTICE LAB</span><h2 id="drill-title">刷題練功房</h2><p>共 ${QUESTION_BANK.length} 題：${QUESTION_BANK.filter(q=>q.sourceId).length} 題歷屆考點延伸＋${QUESTION_BANK.filter(q=>!q.sourceId).length} 題原創概念題。先練未做過的，再回頭鞏固。</p></div><span class="bank-count">${QUESTION_BANK.length}<small>道題目</small></span></div><form id="drillForm"><div class="drill-fields"><label>學科<select name="subject">${subjects.map(s=>`<option ${lastDrill.subject===s?'selected':''}>${s}</option>`).join('')}</select></label><label>課文／單元<select name="lesson"><option value="全部">全部單元</option>${LESSONS.map(l=>`<option value="${l.id}" ${lastDrill.lesson===l.id?'selected':''}>${l.subject} ${l.unit}｜${esc(l.title)}</option>`).join('')}</select></label><label>考點來源學校<select name="school"><option>全部</option>${schools.map(s=>`<option ${lastDrill.school===s?'selected':''}>${esc(s)}</option>`).join('')}<option ${lastDrill.school==='原創概念題'?'selected':''}>原創概念題</option></select></label><label>每回合題數<select name="count">${['10','20','40','全部'].map(n=>`<option ${lastDrill.count===n?'selected':''}>${n}</option>`).join('')}</select></label><label>練習方式<select name="mode"><option value="practice" ${lastDrill.mode==='practice'?'selected':''}>邊做邊學｜即時解析</option><option value="mock" ${lastDrill.mode==='mock'?'selected':''}>模擬考｜考後看解析</option></select></label></div><div class="drill-start"><p id="drillAvailability" role="status"></p><button class="button" type="submit">出發刷題 →</button></div></form><p class="fineprint">同回合不重複，選項順序每回合重排。未作答的題目會保留為未練習。慈濟競賽原卷請到下方「進階競賽」閱讀。</p></section>`;
+  return `<section class="drill-panel" aria-labelledby="drill-title"><div class="section-header"><div><span class="eyebrow">PRACTICE LAB</span><h2 id="drill-title">刷題練功房</h2><p>共 ${QUESTION_BANK.length} 題：${QUESTION_BANK.filter(q=>q.sourceId).length} 題歷屆考點延伸＋${QUESTION_BANK.filter(q=>!q.sourceId&&!q.referenceUrl).length} 題原創概念題＋${VOCAB_QUESTIONS.length} 題生字練習。先練未做過的，再回頭鞏固。</p></div><span class="bank-count">${QUESTION_BANK.length}<small>道題目</small></span></div><form id="drillForm"><div class="drill-fields"><label>學科<select name="subject">${subjects.map(s=>`<option ${lastDrill.subject===s?'selected':''}>${s}</option>`).join('')}</select></label><label>課文／單元<select name="lesson"><option value="全部">全部單元</option>${LESSONS.map(l=>`<option value="${l.id}" ${lastDrill.lesson===l.id?'selected':''}>${l.subject} ${l.unit}｜${esc(l.title)}</option>`).join('')}</select></label><label>考點來源學校<select name="school"><option>全部</option>${schools.map(s=>`<option ${lastDrill.school===s?'selected':''}>${esc(s)}</option>`).join('')}<option ${lastDrill.school==='原創概念題'?'selected':''}>原創概念題</option></select></label><label>題型<select name="skill">${['全部','閱讀與概念','生字注音','生字國字'].map(s=>`<option ${lastDrill.skill===s?'selected':''}>${s}</option>`).join('')}</select></label><label>每回合題數<select name="count">${['10','20','40','全部'].map(n=>`<option ${lastDrill.count===n?'selected':''}>${n}</option>`).join('')}</select></label><label>練習方式<select name="mode"><option value="practice" ${lastDrill.mode==='practice'?'selected':''}>邊做邊學｜即時解析</option><option value="mock" ${lastDrill.mode==='mock'?'selected':''}>模擬考｜考後看解析</option></select></label></div><div class="drill-start"><p id="drillAvailability" role="status"></p><button class="button" type="submit">出發刷題 →</button></div></form><p class="fineprint">同回合不重複，選項順序每回合重排。未作答的題目會保留為未練習。慈濟競賽原卷請到下方「進階競賽」閱讀。</p></section>`;
 }
 function readDrill() {
   const form = document.querySelector('#drillForm');
@@ -33,7 +34,7 @@ function readDrill() {
 function drillPool(config) {
   return QUESTION_BANK.filter(q=>{
     const l = LESSONS.find(l=>l.id===q.lessonId), p=sourceFor(q);
-    return (config.subject==='全部'||l.subject===config.subject) && (config.lesson==='全部'||q.lessonId===config.lesson) && (config.school==='全部'||(config.school==='原創概念題'?!p:p?.school===config.school));
+    return (!config.skill||config.skill==='全部'||(config.skill==='閱讀與概念'?!q.skill:q.skill===config.skill)) && (config.subject==='全部'||l.subject===config.subject) && (config.lesson==='全部'||q.lessonId===config.lesson) && (config.school==='全部'||(config.school==='原創概念題'?(!p&&!q.referenceUrl):p?.school===config.school));
   });
 }
 function updateDrillAvailability() {
@@ -68,7 +69,7 @@ function updateCatalog() {
   el.innerHTML=rows.length?`${standard.length?`<div class="paper-grid">${standard.map(paperCard).join('')}</div>`:''}${competitions.length?`<div class="competition-note"><h3>進階競賽｜臺南慈濟小六菁英盃</h3><p>這裡找到的是慈濟高中提供給小六學生的競賽試題；目前尚未核實到慈濟國小六上校內段考公開卷。競賽不限定本次課本範圍，適合學有餘力再挑戰。</p><a href="https://www.tcsh.tn.edu.tw/Acad-111Camping.aspx" target="_blank" rel="noopener noreferrer">校方歷屆試題總目錄 ↗</a></div><div class="paper-grid">${competitions.map(paperCard).join('')}</div>`:''}`:'<p class="empty-state">沒有符合的試卷，請調整篩選。</p>';
 }
 function reviewHtml(s) {
-  return `<section class="attempt-review"><h2>這回合的答案與解析</h2><p>先回想理由，再對照答案；可以從來源連結查看原卷考點。</p>${s.responses.map((r,i)=>`<article class="review-item ${r.correct?'is-correct':'is-wrong'}"><div class="question-meta">第 ${i+1} 題 · ${r.correct?'✓ 答對':'待複習'}</div><h3>${esc(r.q.q)}</h3><p>你的答案：${esc(r.q.options[r.selected])}</p><p><strong>正確答案：${esc(r.q.options[r.q.answer])}</strong></p><p>${esc(r.q.explain)}</p>${questionSourceHtml(r.q)}</article>`).join('')}</section>`;
+  return `<section class="attempt-review"><h2>這回合的答案與解析</h2><p>先回想理由，再對照答案；也可以開啟來源連結核對學習內容。</p>${s.responses.map((r,i)=>`<article class="review-item ${r.correct?'is-correct':'is-wrong'}"><div class="question-meta">第 ${i+1} 題 · ${r.correct?'✓ 答對':'待複習'}</div><h3>${esc(r.q.q)}</h3><p>你的答案：${esc(r.q.options[r.selected])}</p><p><strong>正確答案：${esc(r.q.options[r.q.answer])}</strong></p><p>${esc(r.q.explain)}</p>${questionSourceHtml(r.q)}</article>`).join('')}</section>`;
 }
 document.addEventListener('submit',e=>{if(e.target.id==='drillForm'){e.preventDefault();beginDrill();}});
 document.addEventListener('change',e=>{
