@@ -84,7 +84,7 @@ assert.equal(run("drillPool({subject:'全部',lesson:'全部',school:'原創概�
 run("launchVocabExam('chi-1','sound','10')");
 assert.equal(run('session.items.length'),10);
 assert.ok(run("session.items.every(q=>q.lessonId==='chi-1'&&q.skill==='生字注音')"));
-run('answer(session.items[0].answer)');assert.ok(main.innerHTML.includes('本課生字來源'));
+const xpBeforeVocab=run('data.xp');run('answer(session.items[0].answer)');assert.ok(main.innerHTML.includes('本課生字來源'));assert.ok(main.innerHTML.includes('training-hud'));assert.equal(run('data.xp')-xpBeforeVocab,10,'correct practice answer grants XP');assert.ok(main.innerHTML.includes('本回合 +10 XP'));
 run("beginNamedExam('vocab:chi-1:sound:10')");assert.equal(run('session.items.length'),10);
 run("launchVocabExam('all','char','全部')");
 assert.equal(run('session.items.length'),105);
@@ -125,7 +125,7 @@ run('finishExam()');assert.equal(run('session.index'),1);
 run('answer(session.items[1].answer);finishExam()');
 assert.equal(run('session.correct'),3);
 assert.equal(run('data.totalAnswered'),JSON.parse(beforeMock).totalAnswered+3);
-assert.equal(run('data.totalCorrect'),JSON.parse(beforeMock).totalCorrect+3);
+assert.equal(run('data.totalCorrect'),JSON.parse(beforeMock).totalCorrect+3);assert.equal(run('data.xp')-JSON.parse(beforeMock).xp,35,'mock XP and three-answer combo bonus settle only on submission');
 run('finishExam()');assert.equal(run('data.totalAnswered'),JSON.parse(beforeMock).totalAnswered+3);
 assert.ok(main.innerHTML.includes('換你試試'));
 // English has per-option feedback, not letter-index feedback that breaks on shuffle.
