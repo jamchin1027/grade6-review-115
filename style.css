@@ -78,3 +78,42 @@ select:focus-visible{outline:3px solid #729b74;outline-offset:2px}
 #offlineStatus{display:inline-block;margin-left:7px;padding:2px 6px;border:1px solid #668071;border-radius:10px;color:#d9e7d7;font:9px 'DM Mono',monospace}#offlineStatus.is-ready{color:#d5ed9f;border-color:#80a56e}@media(max-width:640px){#offlineStatus{display:block;margin:2px 0 0;font-size:8px;border:0;padding:0}}
 
 .answer-confirm{margin:20px 0;padding:16px;background:#f0f4ec;border:1px solid var(--line);border-radius:8px}.answer-confirm p{margin:0 0 12px}.confirm-answer{min-height:48px;min-width:160px;font-size:16px}.confirm-answer:disabled{opacity:.5;cursor:default;transform:none}.option:focus-visible,.confirm-answer:focus-visible{outline:3px solid #34748c;outline-offset:3px}
+
+/* Keep the prompt, choices, and confirmation action together on tablet screens. */
+@media (min-width:641px) and (max-width:1366px){
+  body:has(.exam-shell) main{padding:12px 22px 28px}
+  .exam-shell{max-width:920px}
+  .exam-shell-top{margin-bottom:9px}
+  .exam-progress{margin:7px 0 10px}
+  .training-hud{padding:10px 13px;margin-bottom:8px}
+  .training-avatar{width:34px;height:34px;font-size:20px}
+  .level-track{margin-top:7px}
+  .quest-steps{gap:5px;margin-top:6px}
+  .quest-step{padding:2px 7px}
+  .question-box{padding:17px 20px}
+  .question-text{font-size:21px;line-height:1.45;margin:8px 0 12px}
+  .question-box>.fineprint{font-size:12px;line-height:1.5;margin:5px 0}
+  .option-list{gap:8px}
+  .option{padding:9px 11px;min-height:44px;line-height:1.5}
+  .answer-confirm{margin:12px 0;padding:10px 13px}
+  .answer-confirm p{margin-bottom:8px;line-height:1.5}
+  .confirm-answer{min-height:46px}
+  .question-controls{margin-top:11px}
+}
+@media (min-width:641px) and (max-width:1366px) and (orientation:portrait){
+  body:has(.exam-shell) main{padding-top:10px}
+  .exam-shell{max-width:840px}
+  .option-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (min-width:641px) and (max-width:1366px) and (orientation:landscape){
+  .topbar{height:56px}
+  body:has(.exam-shell) main{padding-top:8px;padding-bottom:18px}
+  .training-top{gap:8px}
+  .training-bottom{margin-top:3px}
+  .question-text{font-size:19px}
+  .question-box{padding:13px 18px}
+  .option{padding:7px 10px}
+  .answer-confirm{display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .answer-confirm p{margin:0}
+  .confirm-answer{flex:none}
+}
