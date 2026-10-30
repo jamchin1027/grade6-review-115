@@ -2,11 +2,11 @@
   "name": "複習小島｜六年級期中複習",
   "short_name": "複習小島",
   "lang": "zh-Hant",
-  "start_url": "./?v=20261029-tablet1#home",
+  "start_url": "./?v=20261030-idiom1#home",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f6f6ef",
   "theme_color": "#173e36",
-  "description": "南一國語、康軒自然、南一社會、翰林英文的六年級上學期期中複習。",
+  "description": "南一國語、康軒自然、南一社會、翰林英文與講義 1–64 成語的六年級期中複習。",
   "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }

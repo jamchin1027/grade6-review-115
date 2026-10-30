@@ -198,6 +198,8 @@
     ['為什麼認識民主歷程不能只背「解嚴」一個日期？',['民主涉及長期的運動、制度改革與公民參與。','日期完全沒有用處。','所有改革都在同一天完成。','民主發展與人民完全無關。'],'日期是定位點，還要理解前後事件、行動和制度變化。','第 1 頁・事件排序延伸'],
     ['討論歷史衝突時，哪種做法較能促進理解？',['核對資料，聆聽不同經驗，避免以偏概全。','把一個人的行為當作整個群體的樣子。','只看最生氣的一句留言。','只要意見不同就禁止對方發言。'],'透過證據與多元經驗，可以減少偏見並理解歷史傷痛。','第 2 頁・史料觀點與公民理解']
   ]);
+  LESSONS.push(IDIOM_LESSON);
+  EXAMS["idiom-quiz"]={title:"成語天地闖關",subject:"成語",desc:"講義 1–64：補回缺字，再破解成語的意思。",questions:IDIOM_QUESTIONS};
   LESSONS.forEach(l => { l.questions = l.questions.map((q,i) => Array.isArray(q) ? {id:`original-${l.id}-${i+1}`,lessonId:l.id,q:q[0],options:q[1],answer:q[2],explain:q[3],origin:'原創概念題'} : q); });
   for (const ex of Object.values(EXAMS)) ex.questions = LESSONS.filter(l => ex.subject === '混合' || l.subject === ex.subject).flatMap(l => l.questions);
   window.QUESTION_BANK = LESSONS.flatMap(l => l.questions);

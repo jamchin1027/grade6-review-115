@@ -1,17 +1,19 @@
 // Response slots belong to question positions. Navigation never reshuffles or scores twice.
 function startExam(id,items,subject,title,mode='practice'){
   if(!items?.length){notify('目前沒有可練習的題目。');return renderHome();}
+  textComposing=false;
   const shuffled=DRILL.shuffle(items.map(normalizeQuestion)).map(q=>DRILL.options(q));
   session={examId:id,items:shuffled,index:0,answered:false,selected:null,correct:0,combo:0,bestCombo:0,xpEarned:0,levelBefore:Math.floor((data.xp||0)/100)+1,subject,title,mode,responses:Array(shuffled.length).fill(null),drafts:Array(shuffled.length).fill(null),finished:false};
   renderQuestion();window.scrollTo(0,0);
 }
 function goQuestion(index,incomplete=false){
   if(!session?.items||session.finished||!Number.isInteger(index)||index<0||index>=session.items.length)return;
-  session.index=index;session.incomplete=incomplete;renderQuestion();window.scrollTo(0,0);
+  textComposing=false;session.index=index;session.incomplete=incomplete;renderQuestion();window.scrollTo(0,0);
 }
 function learningFeedback(q,selected){
-  const right=selected===q.answer,choice=q.options[selected],correct=q.options[q.answer];
+  const right=q.type==='text'?selected===q.expected:selected===q.answer,choice=q.type==='text'?selected:q.options[selected],correct=q.options[q.answer];
   let reason=q.optionFeedback?.[choice],clue=q.clue,rule=q.rule,tryIt=q.tryIt;
+  if(q.type==='text'){const w=IDIOMS.find(w=>w.id===q.idiomId);const comparison=Array.from(q.expected).map((c,i)=>choice?.[i]===c?`第 ${i+1} 格「${c}」正確`:`第 ${i+1} 格你填「${choice?.[i]||'空白'}」，應是「${c}」`).join('；');reason=`${comparison}。完整寫法是「${w.idiom}」。${w.tip} 意思：${w.meaning}`;}
   if(q.vocabId){const w=VOCAB_WORDS.find(w=>w.id===q.vocabId);if(w){clue=`指定詞語「${w.word}」`;rule=`${w.char}：${w.reading}。${w.note||'把字、讀音和詞語連起來記。'}`;tryIt=`遮住答案，先念「${w.word}」，再在紙上寫一次。`;
     reason=right?`你把詞語、字形與讀音配對了。`:q.skill==='生字注音'?`你選的「${choice}」與這裡「${w.word}」的讀音 ${w.reading} 不同；請比較聲調，並留意多音字要看詞語。`:`題目要完成「${w.word}」，所以應寫「${w.char}」；你選的「${choice}」是另一個字。請對照部件，再自己寫出完整詞語。`;}}
   const subject=LESSONS.find(l=>l.id===q.lessonId)?.subject;
@@ -26,28 +28,30 @@ function trainingHud(s,done){
 function renderQuestion(){
   const s=session,q=s.items[s.index],length=s.items.length,r=s.responses[s.index];s.answered=!!r;s.selected=s.drafts[s.index]??r?.selected??null;
   const reveal=!!r&&s.mode!=='mock',done=s.responses.filter((r,i)=>r&&s.drafts[i]===r.selected).length,pending=s.selected!==null&&(!r||s.selected!==r.selected);
-  main.innerHTML=`<section class="exam-shell"><div class="exam-shell-top"><button class="back-button" data-action="exit-exam">← 離開本回合</button><span class="mini-tag">${esc(s.title)}</span></div>${trainingHud(s,done)}<div class="exam-progress" role="progressbar" aria-label="答題進度" aria-valuemin="0" aria-valuemax="${length}" aria-valuenow="${done}"><i style="width:${pct(done/length)}%"></i></div><details class="question-map"><summary>🗺️ 題號地圖 · 已答 ${done} / ${length}（可跳題）</summary><p>● 已確認；◐ 待確認；○ 未選。點題號回看，選項會保留。</p><div class="question-numbers">${s.items.map((_,i)=>{const confirmed=s.responses[i]&&s.drafts[i]===s.responses[i].selected,picked=s.drafts[i]!==null;return `<button data-question-index="${i}" class="${confirmed?'is-answered':''}" ${i===s.index?'aria-current="step"':''} aria-label="第 ${i+1} 題，${confirmed?'已確認':picked?'待確認':'未選'}">${confirmed?'●':picked?'◐':'○'} ${i+1}</button>`;}).join('')}</div></details><div class="question-box"><div class="question-meta">第 ${s.index+1} 題 / ${length} 題 · ${esc(LESSONS.find(l=>l.id===q.lessonId)?.title||s.subject)}</div><p class="fineprint">${s.mode==='mock'?'模擬考：先選答案，再按「確認答案」。回前題修改後也要確認，交卷後才顯示答案與解析。':'練習模式：先選答案，再按「確認答案」看解析。確認前可重選；確認後保留作答，可往前回看。'}</p>${s.incomplete?'<p class="incomplete-note" role="status">還有題目沒作答或尚未確認，已帶你到需要確認的題目；請按「確認答案」後再交卷。</p>':''}<h1 class="question-text">${esc(q.q)}</h1><div class="option-list">${q.options.map((o,i)=>{let cls='';if(reveal&&i===q.answer)cls='correct';else if(reveal&&i===s.selected)cls='wrong';else if(i===s.selected)cls='selected';return `<button class="option ${cls}" data-answer="${i}" aria-pressed="${i===s.selected}" ${reveal?'disabled':''}><span class="option-letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`;}).join('')}</div>${reveal?`${learningFeedback(q,s.selected)}${questionSourceHtml(q)}`:`<div class="answer-confirm"><p role="status">${pending?`已選 ${String.fromCharCode(65+s.selected)}，尚未確認。可以重新選擇，想好再按確認。`:r?'答案已記錄，可修改；修改後請再確認，交卷後一起對答案。':'先點選一個答案，想好再按確認。'}</p><button class="button confirm-answer" data-action="confirm-answer" ${pending?'':'disabled'}>${r?(pending?'確認修改':'已確認答案'):'確認答案'}</button></div>`}<div class="question-controls"><button class="button button-small" data-action="prev-question" ${s.index===0?'disabled':''}>← 上一題</button><span class="question-meta">${s.mode==='mock'?'已答 '+done+' 題':'答對 '+s.correct+' 題'}</span><button class="button" data-action="${s.index===length-1?'finish-exam':'next-question'}">${s.index===length-1?'交卷看結果':'下一題 →'}</button></div></div></section>`;
+  main.innerHTML=`<section class="exam-shell"><div class="exam-shell-top"><button class="back-button" data-action="exit-exam">← 離開本回合</button><span class="mini-tag">${esc(s.title)}</span></div>${trainingHud(s,done)}<div class="exam-progress" role="progressbar" aria-label="答題進度" aria-valuemin="0" aria-valuemax="${length}" aria-valuenow="${done}"><i style="width:${pct(done/length)}%"></i></div><details class="question-map"><summary>🗺️ 題號地圖 · 已答 ${done} / ${length}（可跳題）</summary><p>● 已確認；◐ 待確認；○ 未選。點題號回看，選項會保留。</p><div class="question-numbers">${s.items.map((_,i)=>{const confirmed=s.responses[i]&&s.drafts[i]===s.responses[i].selected,picked=s.drafts[i]!==null;return `<button data-question-index="${i}" class="${confirmed?'is-answered':''}" ${i===s.index?'aria-current="step"':''} aria-label="第 ${i+1} 題，${confirmed?'已確認':picked?'待確認':'未選'}">${confirmed?'●':picked?'◐':'○'} ${i+1}</button>`;}).join('')}</div></details><div class="question-box"><div class="question-meta">第 ${s.index+1} 題 / ${length} 題 · ${esc(LESSONS.find(l=>l.id===q.lessonId)?.title||s.subject)}</div><p class="fineprint">${s.mode==='mock'?'模擬考：先作答，再按「確認答案」。修改後也要確認，交卷後才看解析。':'練習模式：先作答，再按「確認答案」看解析。確認前可修改；確認後可往前回看。'}</p>${s.incomplete?'<p class="incomplete-note" role="status">還有題目沒作答或尚未確認，已帶你到需要確認的題目；請按「確認答案」後再交卷。</p>':''}<h1 class="question-text">${esc(q.q)}</h1>${q.type==='text'?textAnswerHtml(q,s.selected,reveal):`<div class="option-list">${q.options.map((o,i)=>{let cls='';if(reveal&&i===q.answer)cls='correct';else if(reveal&&i===s.selected)cls='wrong';else if(i===s.selected)cls='selected';return `<button class="option ${cls}" data-answer="${i}" aria-pressed="${i===s.selected}" ${reveal?'disabled':''}><span class="option-letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`;}).join('')}</div>`}${reveal?`${learningFeedback(q,s.selected)}${questionSourceHtml(q)}`:confirmationHtml(s,q,r,pending)}<div class="question-controls"><button class="button button-small" data-action="prev-question" ${s.index===0?'disabled':''}>← 上一題</button><span class="question-meta">${s.mode==='mock'?'已答 '+done+' 題':'答對 '+s.correct+' 題'}</span><button class="button" data-action="${s.index===length-1?'finish-exam':'next-question'}">${s.index===length-1?'交卷看結果':'下一題 →'}</button></div></div></section>`;
 }
 function recordResponse(r){
   if(r.recorded)return;r.recorded=true;const q=r.q,s=session,earned=r.correct?10:5;data.xp=(data.xp||0)+earned;if(s){s.xpEarned+=earned;if(r.correct){s.combo++;s.bestCombo=Math.max(s.bestCombo,s.combo);if(s.combo%3===0){data.xp+=5;s.xpEarned+=5;}}else s.combo=0;}
+  if(q.idiomId){data.idiomProgress ||= {};const p=data.idiomProgress[q.idiomId] ||= {};p[q.type==='text'?'blank':'meaning']=r.correct;}
   data.seen[q.id]=true;data.totalAnswered++;
   const day=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'),today=day(new Date());
   if(data.lastDay!==today){const prev=new Date();prev.setDate(prev.getDate()-1);data.streak=data.lastDay===day(prev)?data.streak+1:1;data.lastDay=today;}
   const id=q.lessonId||findLessonForQuestion(q),st=data.stats[id]||(data.stats[id]={seen:0,correct:0});st.seen++;
-  if(r.correct){data.totalCorrect++;st.correct++;removeWrong(q);data.done[id]=true;}
-  else {const list=data.wrong[id]||(data.wrong[id]=[]),saved={...q,selectedAnswer:q.options[r.selected]};const i=list.findIndex(x=>x.id===q.id||x.q===q.q);if(i<0)list.push(saved);else list[i]=saved;}
+  if(r.correct){data.totalCorrect++;st.correct++;removeWrong(q);if(!q.idiomId)data.done[id]=true;}
+  else {const list=data.wrong[id]||(data.wrong[id]=[]),saved={...q,selectedAnswer:q.type==='text'?r.selected:q.options[r.selected]};const i=list.findIndex(x=>x.id===q.id||x.q===q.q);if(i<0)list.push(saved);else list[i]=saved;}
+  if(q.idiomId){if(IDIOMS.every(w=>idiomStars(w)===2))data.done[id]=true;else delete data.done[id];}
 }
 function answer(i){
   const s=session;if(!s?.items||s.finished||(s.mode!=='mock'&&s.responses[s.index]))return;
-  const q=s.items[s.index];if(!Number.isInteger(i)||i<0||i>=q.options.length)return;
+  const q=s.items[s.index];if(q.type==='text')return;if(!Number.isInteger(i)||i<0||i>=q.options.length)return;
   s.drafts[s.index]=i;renderQuestion();
   document.querySelector('[data-answer="'+i+'"]')?.focus();
 }
 function confirmAnswer(){
   const s=session;if(!s?.items||s.finished||(s.mode!=='mock'&&s.responses[s.index]))return;
   const q=s.items[s.index],i=s.drafts[s.index];
-  if(!Number.isInteger(i)||i<0||i>=q.options.length||s.responses[s.index]?.selected===i)return;
-  const r={q,selected:i,correct:i===q.answer};s.responses[s.index]=r;s.correct=s.responses.filter(x=>x?.correct).length;s.incomplete=false;
+  if(!validDraft(q,i)||textComposing||s.responses[s.index]?.selected===i)return;
+  const r={q,selected:i,correct:q.type==='text'?i===q.expected:i===q.answer};s.responses[s.index]=r;s.correct=s.responses.filter(x=>x?.correct).length;s.incomplete=false;
   if(s.mode!=='mock'){recordResponse(r);saveData();updateTop();}renderQuestion();
 }
 function finishExam(){

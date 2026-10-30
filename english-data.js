@@ -99,5 +99,5 @@ window.ENGLISH_QUESTIONS=[];
   EXAMS['eng-quiz']={title:'英文期中任務',subject:'英文',desc:'Unit 1–2 單字、過去式、發音辨別與短文線索。',questions:ENGLISH_QUESTIONS};
   EXAMS['mix-quiz'].title='四科期中大冒險';
   EXAMS['mix-quiz'].desc='在本次期中範圍，練國語、自然、社會與英文。';
-  EXAMS['mix-quiz'].questions=[...QUESTION_BANK];
+  EXAMS['mix-quiz'].questions=QUESTION_BANK.filter(q=>!q.idiomId);
 })();

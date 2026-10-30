@@ -7,28 +7,29 @@ const saved = new Map([['review-island-115-v1',JSON.stringify({done:{'chi-1':tru
 const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(type,fn){if(type==='click')clickHandlers.push(fn)}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history:{replaceState(){}},requestAnimationFrame:fn=>fn()};
 context.window=context;context.addEventListener=()=>{};context.scrollTo=()=>{};
 vm.createContext(context);
-for(const file of ['data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','practice.js','quiz.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','practice.js','text-answer.js','quiz.js','idioms.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
 const run=code=>vm.runInContext(code,context);
 const {QUESTION_BANK:bank,PAPERS:papers,LESSONS:lessons,DRILL:drill}=context;
-assert.equal(bank.length,511);
+assert.equal(bank.length,1023);
 assert.equal(bank.filter(q=>q.sourceId).length,160);
 assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
 assert.equal(new Set(bank.map(q=>q.q)).size,bank.length);
 for(const q of bank){
-  assert.equal(q.options.length,4,q.id);
-  assert.equal(new Set(q.options).size,4,q.id);
+  const optionCount=q.type==='text'?1:4;
+  assert.equal(q.options.length,optionCount,q.id);
+  assert.equal(new Set(q.options).size,optionCount,q.id);
   assert.ok(Number.isInteger(q.answer)&&q.answer>=0&&q.answer<4,q.id);
   assert.ok(q.explain.length>10,q.id);
   assert.ok(lessons.some(l=>l.id===q.lessonId),q.id);
   if(q.sourceId){assert.ok(papers.some(p=>p.id===q.sourceId),q.id);assert.ok(q.sourceRef,q.id);}
-  for(let i=0;i<20;i++){const mixed=drill.options(q);assert.equal(mixed.options[mixed.answer],q.options[q.answer],q.id);assert.equal(new Set(mixed.options).size,4,q.id);}
+  for(let i=0;i<20;i++){const mixed=drill.options(q);assert.equal(mixed.options[mixed.answer],q.options[q.answer],q.id);assert.equal(new Set(mixed.options).size,optionCount,q.id);}
 }
-const seen=Object.fromEntries(bank.slice(0,430).map(q=>[q.id,true]));
+const seen=Object.fromEntries(bank.slice(0,bank.length-81).map(q=>[q.id,true]));
 const picked=drill.select([...bank,bank[0]],90,seen);
 assert.equal(picked.length,90);assert.equal(new Set(picked.map(q=>q.id)).size,90);
 assert.ok(picked.slice(0,81).every(q=>!seen[q.id]));
 assert.ok(picked.slice(81).every(q=>seen[q.id]));
-assert.equal(drill.select(bank,1000,seen).length,511);
+assert.equal(drill.select(bank,2000,seen).length,1023);
 assert.equal(run('data.totalAnswered'),2,'old progress survives');
 assert.equal(run('data.done["chi-1"]'),true);
 assert.ok(run('data.seen && typeof data.seen==="object"'));
@@ -206,4 +207,54 @@ assert.equal(run('data.xp'),JSON.parse(beforePendingMock).xp+20);
 const afterPendingMock=run('JSON.stringify(data)');
 run('answer(0);confirmAnswer()');
 assert.equal(run('JSON.stringify(data)'),afterPendingMock,'finished sessions ignore further taps');
-console.log(`PASS: ${bank.length} unique questions; 105 vocabulary entries; 120 English questions; draft taps, confirmation click routing, draft navigation, pending mock edits, no premature scoring, idempotent confirmation/submission, feedback, source filters and progress preservation.`);
+// Independently transcribed headwords in photo order (not generated from the data).
+const photoWords='一日三秋 一言九鼎 才高八斗 鍥而不捨 披星戴月 讓棗推梨 一字千金 沉魚落雁 千里鵝毛 一介不取 臥薪嘗膽 文過飾非 杞人憂天 一鳴驚人 黔驢技窮 寸草春暉 吳下阿蒙 行雲流水 行不由徑 江郎才盡 投桃報李 防微杜漸 宜室宜家 謙沖自牧 疾風勁草 走馬看花 不亢不卑 一鼓作氣 大快朵頤 金聲玉振 金蘭之交 龍行虎步 汲汲營營 一片冰心 蕙質蘭心 不世之材 伯仲之間 舉案齊眉 鐘鼎山林 鴻鵠之志 伯樂相馬 高瞻遠矚 光風霽月 老驥伏櫪 枕石漱流 孜孜矻矻 駑馬十駕 終南捷徑 囊螢映雪 劍及履及 運籌帷幄 按部就班 指鹿為馬 未雨綢繆 頤指氣使 魚游沸鼎 暴殄天物 亦步亦趨 自怨自艾 優柔寡斷 臨渴掘井 魚雁往返 眾口鑠金 張冠李戴'.split(' ');
+assert.deepEqual(Array.from(context.IDIOMS,w=>w.idiom),photoWords);
+assert.equal(context.IDIOM_QUESTIONS.length,512);
+for(const w of context.IDIOMS){
+  assert.ok(w.meaning&&w.example&&w.tip);
+  const qs=context.IDIOM_QUESTIONS.filter(q=>q.idiomId===w.id),textQs=qs.filter(q=>q.type==='text');
+  assert.equal(textQs.length,7);assert.equal(qs.length,8);
+  for(const q of textQs){assert.ok(!q.q.includes(w.idiom));assert.equal(q.expected.length,q.blankSize);assert.equal(q.masked.replace('□'.repeat(q.blankSize),q.expected),w.idiom);assert.equal(q.expected,w.idiom.slice(q.blankStart,q.blankStart+q.blankSize));}
+  for(const q of qs.filter(q=>q.type!=='text'))for(const o of q.options)assert.ok(q.optionFeedback[o].length>15);
+}
+assert.equal(run("drillPool({subject:'成語',lesson:'全部',school:'全部',skill:'成語填空'}).length"),448);
+assert.equal(run("drillPool({subject:'成語',lesson:'全部',school:'全部',skill:'成語意思'}).length"),64);
+assert.equal(run("EXAMS['mix-quiz'].questions.some(q=>q.idiomId)"),false,'four-subject exam keeps its scope');
+run("renderIdioms('1')");assert.equal((main.innerHTML.match(/class="idiom-card"/g)||[]).length,8);
+run("renderIdioms('all')");assert.equal((main.innerHTML.match(/class="idiom-card"/g)||[]).length,64);
+run("idiomCover=true;renderIdioms('1')");assert.ok(main.innerHTML.includes('<h3>□□□□</h3>'));
+run("location.hash='#idioms/8';route()");assert.ok(main.innerHTML.includes('寶藏灣'));assert.ok(main.innerHTML.includes('張冠李戴'));
+for(const kind of ['blank','meaning','mix']){
+  run(`beginNamedExam('idiom:1:${kind}:全部:practice')`);
+  assert.equal(run('session.items.length'),kind==='mix'?16:8);
+  assert.equal(run('new Set(session.items.map(q=>q.idiomId+q.skill)).size'),run('session.items.length'));
+}
+run("startExam('written',IDIOM_QUESTIONS.filter(q=>q.type==='text').slice(0,2),'成語','填字')");
+const beforeWriting=run('JSON.stringify(data)');
+run("syncTextDraft('A');confirmAnswer();syncTextDraft('');confirmAnswer()");
+assert.equal(run('JSON.stringify(data)'),beforeWriting);
+run("syncTextDraft('錯'.repeat(session.items[0].blankSize))");
+assert.equal(run('session.responses[0]'),null);
+const typedDraft=run('session.selected');run('goQuestion(1);goQuestion(0)');assert.equal(run('session.selected'),typedDraft);
+assert.ok(main.innerHTML.includes(`value="${typedDraft}"`));
+run('confirmAnswer();confirmAnswer()');
+assert.ok(main.innerHTML.includes('第 1 格你填'));
+assert.equal(run('data.totalAnswered'),JSON.parse(beforeWriting).totalAnswered+1);
+assert.equal(run('data.idiomProgress[session.items[0].idiomId].blank'),false);
+run('renderMistakes()');assert.ok(main.innerHTML.includes('第 1 格你填'),'written mistake retains actual entered characters');
+run("launchIdiomExam('all','wrong','全部')");
+run("goQuestion(session.items.findIndex(q=>q.type==='text'));syncTextDraft(session.items[session.index].expected);confirmAnswer()");
+assert.equal(run('data.idiomProgress[session.items[session.index].idiomId].blank'),true);
+assert.ok(run('!(data.wrong["idiom-world"]||[]).some(q=>q.id===session.items[session.index].id)'));
+run("startExam('written-mock',IDIOM_QUESTIONS.filter(q=>q.type==='text').slice(0,2),'成語','填字模擬考','mock')");
+const beforeWrittenMock=run('JSON.stringify(data)');
+run('syncTextDraft(session.items[0].expected);textComposing=true;confirmAnswer()');assert.equal(run('session.responses[0]'),null,'IME composition cannot submit');
+run("textComposing=false;confirmAnswer();goQuestion(1);syncTextDraft(session.items[1].expected);confirmAnswer();goQuestion(0);syncTextDraft('錯'.repeat(session.items[0].blankSize));finishExam()");
+assert.equal(run('session.finished'),false,'unconfirmed text edits block submission');
+assert.equal(run('JSON.stringify(data)'),beforeWrittenMock,'written mock does not reveal or record grades early');
+assert.ok(!main.innerHTML.includes('class="explain'));
+run('syncTextDraft(session.items[0].expected);finishExam();finishExam()');
+assert.equal(run('session.correct'),2);assert.equal(run('data.totalAnswered'),JSON.parse(beforeWrittenMock).totalAnswered+2);
+assert.equal(run('JSON.parse(localStorage.getItem(STORE)).idiomProgress[session.items[0].idiomId].blank'),true,'stars persist');
+console.log(`PASS: ${bank.length} unique questions; 64 photo-verified idioms; 448 written variants + 64 meanings; IME, confirmation, navigation, pending mock edits, wrong-answer recovery, stars, legacy progress, and existing subject quizzes.`);

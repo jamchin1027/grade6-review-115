@@ -1,12 +1,12 @@
-const CACHE_NAME = 'review-island-offline-20261029-tablet-1';
+const CACHE_NAME = 'review-island-offline-20261030-idiom-1';
 const ASSETS = [
   './', './index.html', './manifest.json', './icon.svg',
-  './style.css?v=20261029-tablet1', './offline.js?v=20261029-tablet1',
-  './data.js?v=20261029-tablet1', './bank.js?v=20261029-tablet1',
-  './vocab-data.js?v=20261029-tablet1', './vocab.js?v=20261029-tablet1',
-  './english-data.js?v=20261029-tablet1', './english.js?v=20261029-tablet1',
-  './practice.js?v=20261029-tablet1', './quiz.js?v=20261029-tablet1',
-  './app.js?v=20261029-tablet1'
+  './style.css?v=20261030-idiom1', './offline.js?v=20261030-idiom1',
+  './data.js?v=20261030-idiom1', './bank.js?v=20261030-idiom1',
+  './vocab-data.js?v=20261030-idiom1', './vocab.js?v=20261030-idiom1',
+  './english-data.js?v=20261030-idiom1', './english.js?v=20261030-idiom1',
+  './practice.js?v=20261030-idiom1', './quiz.js?v=20261030-idiom1',
+  './text-answer.js?v=20261030-idiom1', './app.js?v=20261030-idiom1', './idiom-data.js?v=20261030-idiom1', './idioms.js?v=20261030-idiom1'
 ];
 
 self.addEventListener('install', event => {
