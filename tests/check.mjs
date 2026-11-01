@@ -7,10 +7,10 @@ const saved = new Map([['review-island-115-v1',JSON.stringify({done:{'chi-1':tru
 const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(type,fn){if(type==='click')clickHandlers.push(fn)}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history:{replaceState(){}},requestAnimationFrame:fn=>fn()};
 context.window=context;context.addEventListener=()=>{};context.scrollTo=()=>{};
 vm.createContext(context);
-for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','practice.js','text-answer.js','quiz.js','idioms.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','math-data.js','math.js','note-data.js','practice.js','text-answer.js','quiz.js','idioms.js','notebook.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
 const run=code=>vm.runInContext(code,context);
 const {QUESTION_BANK:bank,PAPERS:papers,LESSONS:lessons,DRILL:drill}=context;
-assert.equal(bank.length,1023);
+assert.equal(bank.length,1055);
 assert.equal(bank.filter(q=>q.sourceId).length,160);
 assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
 assert.equal(new Set(bank.map(q=>q.q)).size,bank.length);
@@ -29,7 +29,7 @@ const picked=drill.select([...bank,bank[0]],90,seen);
 assert.equal(picked.length,90);assert.equal(new Set(picked.map(q=>q.id)).size,90);
 assert.ok(picked.slice(0,81).every(q=>!seen[q.id]));
 assert.ok(picked.slice(81).every(q=>seen[q.id]));
-assert.equal(drill.select(bank,2000,seen).length,1023);
+assert.equal(drill.select(bank,2000,seen).length,1055);
 assert.equal(run('data.totalAnswered'),2,'old progress survives');
 assert.equal(run('data.done["chi-1"]'),true);
 assert.ok(run('data.seen && typeof data.seen==="object"'));
@@ -78,10 +78,10 @@ for(const w of context.VOCAB_WORDS){
   assert.ok(!qs[1].q.includes(w.char),`character prompt must not reveal answer: ${w.word}`);
   assert.ok(qs.every(q=>q.referenceUrl===w.sourceUrl&&!q.sourceId));
 }
-for(const [skill,count] of [['生字注音',105],['生字國字',105],['閱讀與概念',181]]){
+for(const [skill,count] of [['生字注音',105],['生字國字',105],['閱讀與概念',213]]){
   assert.equal(run(`drillPool({subject:'全部',lesson:'全部',school:'全部',skill:'${skill}'}).length`),count);
 }
-assert.equal(run("drillPool({subject:'全部',lesson:'全部',school:'原創概念題'}).length"),21);
+assert.equal(run("drillPool({subject:'全部',lesson:'全部',school:'原創概念題'}).length"),53);
 run("launchVocabExam('chi-1','sound','10')");
 assert.equal(run('session.items.length'),10);
 assert.ok(run("session.items.every(q=>q.lessonId==='chi-1'&&q.skill==='生字注音')"));
@@ -257,4 +257,46 @@ assert.ok(!main.innerHTML.includes('class="explain'));
 run('syncTextDraft(session.items[0].expected);finishExam();finishExam()');
 assert.equal(run('session.correct'),2);assert.equal(run('data.totalAnswered'),JSON.parse(beforeWrittenMock).totalAnswered+2);
 assert.equal(run('JSON.parse(localStorage.getItem(STORE)).idiomProgress[session.items[0].idiomId].blank'),true,'stars persist');
-console.log(`PASS: ${bank.length} unique questions; 64 photo-verified idioms; 448 written variants + 64 meanings; IME, confirmation, navigation, pending mock edits, wrong-answer recovery, stars, legacy progress, and existing subject quizzes.`);
+// The six-subject notebook includes the confirmed Kang Hsuan math units and links to practice.
+assert.equal(context.STUDY_NOTES.length,24);
+assert.equal(new Set(context.STUDY_NOTES.map(n=>n.id)).size,24);
+assert.equal(context.MATH_UNITS.map(u=>u.title).join('、'),'最大公因數與最小公倍數、分數除法、數量關係、小數除法');
+assert.equal(context.MATH_QUESTIONS.length,32);
+assert.ok(context.MATH_QUESTIONS.every(q=>q.mathSource&&q.explain.length>15&&!q.sourceId));
+for(const q of context.MATH_QUESTIONS){
+  assert.equal(new Set(q.options).size,4,q.id);
+  for(const choice of q.options)assert.ok(q.optionFeedback[choice]?.length>12,`${q.id} ${choice}`);
+  const shuffled=drill.options(q);
+  assert.equal(shuffled.options[shuffled.answer],q.options[q.answer]);
+  assert.ok(shuffled.options.every(choice=>shuffled.optionFeedback[choice]===q.optionFeedback[choice]));
+}
+assert.equal(context.MATH_QUESTIONS.find(q=>q.id==='math-2-original-1').options[0],'5/6');
+assert.ok(!context.MATH_QUESTIONS.find(q=>q.id==='math-2-original-1').options.includes('10/12'),'equivalent result is not a distractor');
+for(const subject of ['國語','英文','數學','自然','社會','成語天地']){
+  assert.ok(context.STUDY_NOTES.some(n=>n.subject===subject));
+  run(`renderNotebook('${subject}')`);
+  assert.ok(main.innerHTML.includes('考前要記住'));
+  assert.ok(main.innerHTML.includes('這裡容易失分'));
+  assert.ok(main.innerHTML.includes('先自己回答，再翻開'));
+  assert.ok(main.innerHTML.includes('class="note-mark"'));
+}
+for(const n of context.STUDY_NOTES){
+  assert.ok(n.core.length>=3&&n.recall.length>=2&&n.worked.length===2&&n.trap.length>12,n.id);
+  run(`renderNotebook('${n.id}')`);
+  assert.ok(main.innerHTML.includes(n.title),n.id);
+  assert.ok(main.innerHTML.includes(n.href),n.id);
+}
+run("markNote('math-1','again')");
+assert.equal(run("data.notebook['math-1'].status"),'again');
+assert.equal(run("JSON.parse(localStorage.getItem(STORE)).notebook['math-1'].status"),'again');
+run("markNote('math-1','know')");
+assert.equal(run("data.notebook['math-1'].status"),'know');
+run("location.hash='#notes/math-4';route()");assert.ok(main.innerHTML.includes('小數除法'));
+run("beginNamedExam('math-quiz')");assert.equal(run('session.items.length'),20);
+assert.ok(run("session.items.every(q=>q.lessonId.startsWith('math-'))"));
+run("beginLessonTest('math-3')");assert.equal(run('session.items.length'),8);
+run("startExam('math-feedback',[MATH_QUESTIONS.find(q=>q.id==='math-2-original-1')],'數學','錯因')");
+run("answer(session.items[0].options.indexOf('8/15'));confirmAnswer()");
+assert.ok(main.innerHTML.includes('沒有把除數 4/5 取倒數'));
+run('renderHome()');assert.ok(main.innerHTML.includes('筆記中心'));assert.ok(main.innerHTML.includes('數學解題任務'));
+console.log(`PASS: ${bank.length} unique questions; 24 notes in six subjects; 32 math questions with option-specific feedback; 64 photo-verified idioms; IME, confirmation, navigation, wrong-answer recovery, stars and legacy progress.`);
