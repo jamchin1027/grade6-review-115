@@ -294,7 +294,20 @@ for(const n of context.STUDY_NOTES){
   assert.ok(main.innerHTML.includes(n.title),n.id);
   assert.ok(main.innerHTML.includes(n.href),n.id);
 }
+run("renderNotebook('sci-2')");
+const solutionNotes=context.STUDY_NOTES.find(n=>n.id==='sci-2').core.map(x=>x.join(' ')).join(' ');
+assert.ok(solutionNotes.includes('藍色石蕊試紙變紅色'));
+assert.ok(solutionNotes.includes('紅色石蕊試紙變藍色'));
+assert.ok(main.innerHTML.includes('note-mark-red'));
+assert.ok(main.innerHTML.includes('note-mark-blue'));
+run("renderNotebook('soc-2')");
+const civicsNotes=context.STUDY_NOTES.find(n=>n.id==='soc-2').core.map(x=>x.join(' ')).join(' ');
+assert.ok(civicsNotes.includes('1987 年解嚴'));
+assert.ok(civicsNotes.includes('1996 年首次'));
+assert.ok(civicsNotes.includes('立法院制定'));
+context.scrollY=777;
 run("markNote('math-1','again')");
+assert.equal(context.scrollY,777,'marking a note keeps the reading position');
 assert.equal(run("data.notebook['math-1'].status"),'again');
 assert.equal(run("JSON.parse(localStorage.getItem(STORE)).notebook['math-1'].status"),'again');
 run("markNote('math-1','know')");

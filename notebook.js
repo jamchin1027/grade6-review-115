@@ -4,15 +4,15 @@ const NOTE_TERMS={
   國語:['景物','擬人','證據','主旨','信任','尊重','時間線','事實','感受','原理','作用','安納亞','穆太','公平'],
   英文:['Where did you go last weekend?','What did he do yesterday?','He didn’t swim.','Did he swim?','He swam.','didn’t','did','went','go','過去式','原形','yesterday','last weekend'],
   數學:['最大公因數','最小公倍數','質數','合數','倒數','分子','分母','商不變','因數','倍數','間隔','總和','差不變','積不變','除數','被除數','驗算','四捨五入'],
-  自然:['水蒸氣','小水滴','冰晶','天氣','氣候','長時間','溶解','溶液','公平實驗','指示劑','酸鹼','導電'],
-  社會:['1895','1945','1987','行政院','立法院','法院','民主','權利','多數決','殖民統治','措施','影響'],
+  自然:['水蒸氣','小水滴','冰晶','天氣','氣候','長時間','溶解','溶液','公平實驗','指示劑','石蕊試紙','高麗菜汁','酸性','鹼性','中性','紅色','藍色','藍綠色','導電'],
+  社會:['1895','1945','1949','1987','1996','行政院','立法院','司法院','考試院','監察院','法院','民主','權利','多數決','殖民統治','措施','影響'],
   成語天地:['填字','意思','字形','記憶線索']
 };
 const noteReviewKey='notebook';
 function noteText(value,note){
   const terms=[note.title,...NOTE_TERMS[note.subject]].filter(Boolean).sort((a,b)=>b.length-a.length);
   const expression=new RegExp('('+terms.map(s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|')+')','g');
-  return String(value).split(expression).map(part=>terms.includes(part)?`<mark class="note-mark">${esc(part)}</mark>`:esc(part)).join('');
+  return String(value).split(expression).map(part=>terms.includes(part)?`<mark class="note-mark${part==='紅色'?' note-mark-red':part==='藍色'?' note-mark-blue':''}">${esc(part)}</mark>`:esc(part)).join('');
 }
 function noteRecord(id){return data[noteReviewKey]?.[id]||null}
 function localStudyDate(day){return [day.getFullYear(),String(day.getMonth()+1).padStart(2,'0'),String(day.getDate()).padStart(2,'0')].join('-')}
@@ -24,7 +24,8 @@ function vocabNoteOrigin(){
   const origin=history.state?.vocabReturn;
   return STUDY_NOTES.some(n=>n.id===origin?.noteId&&n.subject==='國語')&&Number.isFinite(origin.scrollY)?origin:null;
 }
-function renderNotebook(target){
+function renderNotebook(target,preservePosition=false){
+  const previousScroll=preservePosition?window.scrollY:null;
   const chosen=STUDY_NOTES.find(n=>n.id===target);
   const requestedSubject=NOTE_SUBJECTS.includes(target)?target:chosen?.subject;
   if(requestedSubject)activeNoteSubject=requestedSubject;
@@ -46,14 +47,15 @@ function renderNotebook(target){
   <p class="note-source">筆記是依這次確認的範圍另寫的複習內容；國語、社會參考南一，自然與數學參考康軒，英文參考翰林 Here We Go 9，成語依家長提供的 1–64 成語講義。數學單元順序依<a href="${MATH_SOURCE}" target="_blank" rel="noopener noreferrer">康軒 115 學年數學特刊</a>核對。以老師公告、孩子手上的課本和講義為最終考試範圍。閱讀標記是自我評估，不代表測驗分數。</p></section>`;
   updateTop();
   const returning=history.state?.notebookReturn;
-  if(returning?.noteId===note.id&&Number.isFinite(returning.scrollY))requestAnimationFrame(()=>window.scrollTo({top:returning.scrollY,behavior:'instant'}));
-  else window.scrollTo(0,0);
+  if(previousScroll!==null)window.scrollTo({top:previousScroll,behavior:'instant'});
+  else if(returning?.noteId===note.id&&Number.isFinite(returning.scrollY))requestAnimationFrame(()=>window.scrollTo({top:returning.scrollY,behavior:'instant'}));
+  else window.scrollTo({top:0,behavior:'instant'});
 }
 function markNote(id,status){
   if(!STUDY_NOTES.some(n=>n.id===id)||!['again','know'].includes(status))return;
   data[noteReviewKey]||={};const today=new Date(),next=new Date(today);next.setDate(next.getDate()+(status==='again'?1:3));
   data[noteReviewKey][id]={status,seen:localStudyDate(today),next:localStudyDate(next)};
-  saveData();renderNotebook(id);
+  saveData();renderNotebook(id,true);
 }
 document.addEventListener('click',e=>{
   const button=e.target.closest('[data-note-review]');if(button)markNote(button.dataset.noteId,button.dataset.noteReview);

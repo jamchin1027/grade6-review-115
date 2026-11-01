@@ -149,3 +149,4 @@ select:focus-visible{outline:3px solid #729b74;outline-offset:2px}
 @media print{.topbar,.note-subjects,.note-index,.note-actions,.note-stepper,.note-method,.note-home-band{display:none!important}.note-layout{display:block}.note-paper{border:0;padding:0}.note-recall details p{display:block}.note-source{break-before:avoid}body{background:white}main{max-width:none;padding:0}}
 .notebook[style*="176b89"] .note-mark{color:#145977;background:#e3f2f5;border-bottom-color:#82b5c8}
 .detail-head a.back-button{text-decoration:none;font-size:13px;white-space:nowrap}
+.notebook .note-mark-red{color:#a42935;background:#ffe6e7;border-bottom-color:#d66770}.notebook .note-mark-blue{color:#155eaa;background:#e1efff;border-bottom-color:#6da9e3}
