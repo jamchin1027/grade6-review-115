@@ -1,21 +1,22 @@
-const CACHE_NAME = 'review-island-offline-20261101-notes-deep-1';
+const CACHE_NAME = 'review-island-offline-20261101-double-2';
 const ASSETS = [
   './', './index.html', './manifest.json', './icon.svg',
-  './style.css?v=20261101-notes-deep1', './offline.js?v=20261101-notes-deep1',
-  './data.js?v=20261101-notes-deep1', './bank.js?v=20261101-notes-deep1',
-  './vocab-data.js?v=20261101-notes-deep1', './vocab.js?v=20261101-notes-deep1',
-  './english-data.js?v=20261101-notes-deep1', './english.js?v=20261101-notes-deep1',
-  './math-data.js?v=20261101-notes-deep1', './math.js?v=20261101-notes-deep1',
-  './note-data.js?v=20261101-notes-deep1', './notebook.js?v=20261101-notes-deep1',
-  './practice.js?v=20261101-notes-deep1', './quiz.js?v=20261101-notes-deep1',
-  './text-answer.js?v=20261101-notes-deep1', './app.js?v=20261101-notes-deep1', './idiom-data.js?v=20261101-notes-deep1', './idioms.js?v=20261101-notes-deep1'
+  './style.css?v=20261101-double2', './offline.js?v=20261101-double2',
+  './data.js?v=20261101-double2', './bank.js?v=20261101-double2',
+  './vocab-data.js?v=20261101-double2', './vocab.js?v=20261101-double2',
+  './english-data.js?v=20261101-double2', './english.js?v=20261101-double2',
+  './math-data.js?v=20261101-double2', './math.js?v=20261101-double2',
+  './extra-data.js?v=20261101-double2',
+  './note-data.js?v=20261101-double2', './notebook.js?v=20261101-double2',
+  './practice.js?v=20261101-double2', './quiz.js?v=20261101-double2',
+  './text-answer.js?v=20261101-double2', './app.js?v=20261101-double2', './idiom-data.js?v=20261101-double2', './idioms.js?v=20261101-double2'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()).then(() => notifyClients('OFFLINE_READY')));
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('review-island-offline-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()).then(() => notifyClients('OFFLINE_READY')));
 });
 self.addEventListener('message', event => { if(event.data?.type === 'SKIP_WAITING') self.skipWaiting(); });
 self.addEventListener('fetch', event => {

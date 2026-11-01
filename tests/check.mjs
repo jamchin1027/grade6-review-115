@@ -15,10 +15,16 @@ const history={
 const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(type,fn){if(type==='click')clickHandlers.push(fn)}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history,requestAnimationFrame:fn=>fn()};
 context.window=context;context.addEventListener=()=>{};context.scrollY=0;context.scrollTo=(x,y)=>{context.scrollY=typeof x==='object'?x.top:y};
 vm.createContext(context);
-for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','math-data.js','math.js','note-data.js','practice.js','text-answer.js','quiz.js','idioms.js','notebook.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','math-data.js','math.js','extra-data.js','note-data.js','practice.js','text-answer.js','quiz.js','idioms.js','notebook.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
 const run=code=>vm.runInContext(code,context);
 const {QUESTION_BANK:bank,PAPERS:papers,LESSONS:lessons,DRILL:drill}=context;
-assert.equal(bank.length,1055);
+assert.equal(bank.length,1446);
+assert.equal(bank.filter(q=>q.batch==='new-20261101').length,391);
+for(const [subject,total,added] of [['國語',564,282],['自然',130,65],['社會',88,44]]){
+  const pool=lessons.filter(l=>l.subject===subject).flatMap(l=>l.questions);
+  assert.equal(pool.length,total,`${subject} doubled`);
+  assert.equal(pool.filter(q=>q.batch==='new-20261101').length,added,`${subject} new questions`);
+}
 assert.equal(bank.filter(q=>q.sourceId).length,160);
 assert.equal(new Set(bank.map(q=>q.id)).size,bank.length);
 assert.equal(new Set(bank.map(q=>q.q)).size,bank.length);
@@ -37,7 +43,7 @@ const picked=drill.select([...bank,bank[0]],90,seen);
 assert.equal(picked.length,90);assert.equal(new Set(picked.map(q=>q.id)).size,90);
 assert.ok(picked.slice(0,81).every(q=>!seen[q.id]));
 assert.ok(picked.slice(81).every(q=>seen[q.id]));
-assert.equal(drill.select(bank,2000,seen).length,1055);
+assert.equal(drill.select(bank,2000,seen).length,1446);
 assert.equal(run('data.totalAnswered'),2,'old progress survives');
 assert.equal(run('data.done["chi-1"]'),true);
 assert.ok(run('data.seen && typeof data.seen==="object"'));
@@ -56,11 +62,17 @@ assert.ok(main.innerHTML.includes('對照原卷'));
 assert.equal(run('Object.values(data.wrong).flat().length'),1);
 run("beginNamedExam('wrong-quiz');answer(session.items[0].answer);confirmAnswer()");
 assert.equal(run('Object.values(data.wrong).flat().length'),0,'wrong-answer remapping survives shuffled options');
-run("beginLessonTest('chi-3')");assert.equal(run('session.items.length'),50);
+run("beginLessonTest('chi-3')");assert.equal(run('session.items.length'),100);
 run("beginNamedExam('chi-quiz')");assert.equal(run('session.items.length'),20);
 run("beginNamedExam('paper:jg108-sci')");assert.ok(run("session.items.every(q=>q.lessonId==='sci-2')"));
 run('beginDailyExam()');assert.equal(run('session.items.length'),5);
-assert.equal(run("drillPool({subject:'自然',lesson:'sci-2',school:'全部'}).length"),33);
+assert.equal(run("drillPool({subject:'自然',lesson:'sci-2',school:'全部'}).length"),66);
+assert.equal(run("drillPool({subject:'自然',lesson:'sci-2',school:'全部',batch:'new'}).length"),33);
+assert.equal(run("drillPool({subject:'自然',lesson:'sci-2',school:'全部',batch:'old'}).length"),33);
+assert.equal(run("drillPool({subject:'國語',lesson:'全部',school:'全部',batch:'new'}).length"),282);
+assert.equal(run("drillPool({subject:'國語',lesson:'全部',school:'全部',batch:'old'}).length"),282);
+assert.equal(run("drillPool({subject:'社會',lesson:'全部',school:'全部',batch:'new'}).length"),44);
+assert.equal(run("drillPool({subject:'社會',lesson:'全部',school:'全部',batch:'old'}).length"),44);
 assert.equal(run("drillPool({subject:'國語',lesson:'sci-2',school:'全部'}).length"),0);
 assert.ok(main.innerHTML.includes('第 1 題 / 5 題'));
 const previousBadge=wrongCount.textContent;
@@ -72,6 +84,7 @@ assert.equal(Number(wrongCount.textContent),run('Object.values(data.wrong).flat(
 const inventories=['爽塵垢鳳頁曝涉霾暈跡','栽茂藤蔓掀悉添免隙尚櫃稿顫暮肩絨咂瀉賴','舍皆緣蓬飧兼樽酒舊醅籬簡陋鎮濾潺笆寂陳','衫肌沸騰兀唯勺吶握抵置頒屬榮搞黝襯惹摟','載益副監噪避迅滅援燒液蝕觸承陌攝檔撈註','艇劃荒垠宇宙朽誌系訓械艙駕凌隕眺奪億征'];
 assert.equal(context.VOCAB_WORDS.length,105);
 assert.equal(context.VOCAB_QUESTIONS.length,210);
+assert.equal(bank.filter(q=>q.skill==='生字詞義').length,210);
 inventories.forEach((chars,i)=>{
   const words=context.VOCAB_WORDS.filter(w=>w.lessonId===`chi-${i+1}`);
   assert.equal(words.map(w=>w.char).join(''),chars,'verified lesson membership');
@@ -85,11 +98,17 @@ for(const w of context.VOCAB_WORDS){
   assert.equal(qs[1].options[qs[1].answer],w.char);
   assert.ok(!qs[1].q.includes(w.char),`character prompt must not reveal answer: ${w.word}`);
   assert.ok(qs.every(q=>q.referenceUrl===w.sourceUrl&&!q.sourceId));
+  assert.equal(bank.filter(q=>q.vocabId===w.id&&q.batch==='new-20261101').length,2);
 }
-for(const [skill,count] of [['生字注音',105],['生字國字',105],['閱讀與概念',213]]){
+run("startExam('meaning-feedback',[QUESTION_BANK.find(q=>q.skill==='生字詞義')],'國語','詞義錯因')");
+const wrongMeaning=run('session.items[0].options.findIndex((_,i)=>i!==session.items[0].answer)');
+run(`answer(${wrongMeaning});confirmAnswer()`);
+assert.ok(main.innerHTML.includes('這是「')&&main.innerHTML.includes('的意思；'),'wrong word meaning gets meaning-specific feedback');
+assert.ok(main.innerHTML.includes('自己說出')&&main.innerHTML.includes('造一個句子'),'meaning questions ask for recall');
+for(const [skill,count] of [['生字注音',105],['生字國字',105],['生字詞義',210],['閱讀與概念',394]]){
   assert.equal(run(`drillPool({subject:'全部',lesson:'全部',school:'全部',skill:'${skill}'}).length`),count);
 }
-assert.equal(run("drillPool({subject:'全部',lesson:'全部',school:'原創概念題'}).length"),53);
+assert.equal(run("drillPool({subject:'全部',lesson:'全部',school:'原創概念題'}).length"),234);
 run("launchVocabExam('chi-1','sound','10')");
 assert.equal(run('session.items.length'),10);
 assert.ok(run("session.items.every(q=>q.lessonId==='chi-1'&&q.skill==='生字注音')"));
@@ -269,6 +288,7 @@ assert.equal(run('JSON.parse(localStorage.getItem(STORE)).idiomProgress[session.
 assert.equal(context.STUDY_NOTES.length,24);
 assert.equal(new Set(context.STUDY_NOTES.map(n=>n.id)).size,24);
 assert.equal(context.MATH_UNITS.map(u=>u.title).join('、'),'最大公因數與最小公倍數、分數除法、數量關係、小數除法');
+assert.ok(context.MATH_UNITS.every(u=>u.subject==='數學'),'math units have a visible subject label');
 assert.equal(context.MATH_QUESTIONS.length,32);
 assert.ok(context.MATH_QUESTIONS.every(q=>q.mathSource&&q.explain.length>15&&!q.sourceId));
 for(const q of context.MATH_QUESTIONS){
@@ -347,4 +367,13 @@ for(const id of ['chi-1','chi-6']){
 run("history.pushState(null,'','#home');route();history.pushState(null,'','#vocab/chi-1');route()");
 assert.ok(main.innerHTML.includes('回探索地圖'));
 assert.ok(!main.innerHTML.includes('data-vocab-return'),'a direct vocab visit has no stale note origin');
+const swContext={self:{addEventListener(){}}};
+vm.createContext(swContext);
+vm.runInContext(fs.readFileSync(new URL('../sw.js',import.meta.url),'utf8'),swContext);
+const assets=vm.runInContext('ASSETS',swContext);
+const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
+for(const match of html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)\?v=[^"]+)"/g)){
+  assert.ok(assets.includes('./'+match[1]),`offline cache missing ${match[1]}`);
+}
+assert.ok(assets.some(asset=>asset.startsWith('./extra-data.js?')),'new questions are available offline');
 console.log(`PASS: ${bank.length} unique questions; 24 notes in six subjects; 32 math questions with option-specific feedback; 64 photo-verified idioms; IME, confirmation, navigation, wrong-answer recovery, stars and legacy progress.`);

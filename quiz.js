@@ -14,8 +14,17 @@ function learningFeedback(q,selected){
   const right=q.type==='text'?selected===q.expected:selected===q.answer,choice=q.type==='text'?selected:q.options[selected],correct=q.options[q.answer];
   let reason=q.optionFeedback?.[choice],clue=q.clue,rule=q.rule,tryIt=q.tryIt;
   if(q.type==='text'){const w=IDIOMS.find(w=>w.id===q.idiomId);const comparison=Array.from(q.expected).map((c,i)=>choice?.[i]===c?`第 ${i+1} 格「${c}」正確`:`第 ${i+1} 格你填「${choice?.[i]||'空白'}」，應是「${c}」`).join('；');reason=`${comparison}。完整寫法是「${w.idiom}」。${w.tip} 意思：${w.meaning}`;}
-  if(q.vocabId){const w=VOCAB_WORDS.find(w=>w.id===q.vocabId);if(w){clue=`指定詞語「${w.word}」`;rule=`${w.char}：${w.reading}。${w.note||'把字、讀音和詞語連起來記。'}`;tryIt=`遮住答案，先念「${w.word}」，再在紙上寫一次。`;
-    reason=right?`你把詞語、字形與讀音配對了。`:q.skill==='生字注音'?`你選的「${choice}」與這裡「${w.word}」的讀音 ${w.reading} 不同；請比較聲調，並留意多音字要看詞語。`:`題目要完成「${w.word}」，所以應寫「${w.char}」；你選的「${choice}」是另一個字。請對照部件，再自己寫出完整詞語。`;}}
+  if(q.vocabId){const w=VOCAB_WORDS.find(w=>w.id===q.vocabId);if(w){clue=`指定詞語「${w.word}」`;
+    if(q.skill==='生字詞義'){
+      reason=right?q.explain:reason||`「${w.word}」的意思是${w.meaning}`;
+      rule=`「${w.word}」表示${w.meaning}留意「${w.char}」在這個詞語中的用法。`;
+      tryIt=`遮住選項，自己說出「${w.word}」的意思，再造一個句子。`;
+    }else{
+      rule=`${w.char}：${w.reading}。${w.note||'把字、讀音和詞語連起來記。'}`;
+      tryIt=`遮住答案，先念「${w.word}」，再在紙上寫一次。`;
+      reason=right?`你把詞語、字形與讀音配對了。`:q.skill==='生字注音'?`你選的「${choice}」與這裡「${w.word}」的讀音 ${w.reading} 不同；請比較聲調，並留意多音字要看詞語。`:`題目要完成「${w.word}」，所以應寫「${w.char}」；你選的「${choice}」是另一個字。請對照部件，再自己寫出完整詞語。`;
+    }
+  }}
   const subject=LESSONS.find(l=>l.id===q.lessonId)?.subject;
   if(!tryIt)tryIt=subject==='自然'?'用自己的話說出實驗條件或現象的原因，再想一個可以驗證的例子。':subject==='社會'?'用「事件／制度 → 原因 → 影響」說明答案，不只背選項。':'遮住選項，指出題目中的行動或描述，說明它怎麼支持答案。';
   return `<div class="explain ${right?'good':'try'}"><h2>${right?'🌟 答對，也說說理由':'🔎 找到可以修正的一步'}</h2><p><strong>你的答案：</strong>${esc(choice)}</p><p><strong>正確答案：</strong>${esc(correct)}</p><div class="feedback-steps">${clue?`<p><strong>① 找線索</strong><br>${esc(clue)}</p>`:''}<p><strong>${clue?'②':'①'} ${right?'為什麼正確':'這個選項為何不合'}</strong><br>${esc(reason||`${right?'這個答案符合題目線索。':'把你選的答案與下列判斷依據對照：'} ${q.explain}`)}</p><p><strong>${clue?'③':'②'} 記住判斷方法</strong><br>${esc(rule||q.explain)}</p></div><details class="explain-back"><summary>🗣️ 換你試試：遮住答案說一次</summary><p>${esc(tryIt)}</p><p>自我檢查：我有說出線索嗎？我能解釋另一個選項為何不合嗎？這是口頭練習，不自動評分。</p></details></div>`;

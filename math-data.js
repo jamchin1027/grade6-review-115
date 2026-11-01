@@ -106,6 +106,7 @@
   };
   const questions=[];
   for(const unit of units){
+    unit.subject='數學';
     unit.questions=unit.rows.map(([q,options,explain],i)=>({id:`${unit.id}-original-${i+1}`,lessonId:unit.id,q,options,answer:0,explain,origin:'康軒六上第 1–4 單元 · 本站原創練習',mathSource:source,optionFeedback:Object.fromEntries(options.map((choice,j)=>[choice,j===0?`正確。${explain}`:`你選了「${choice}」。${wrongFeedback[unit.id][i][j-1]} ${explain}`])),clue:'先圈出題目問什麼、單位是什麼，再列式或畫圖。',rule:explain,tryIt:'遮住選項，在紙上重算一次，並用反向運算或代回題意檢查。'}));
     delete unit.rows;
   }
