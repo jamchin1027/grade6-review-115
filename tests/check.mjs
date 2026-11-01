@@ -4,8 +4,16 @@ import assert from 'node:assert/strict';
 
 const main = {innerHTML:''}, wrongCount={textContent:''}, clickHandlers=[];
 const saved = new Map([['review-island-115-v1',JSON.stringify({done:{'chi-1':true},stats:{'chi-1':{seen:2,correct:1}},wrong:{},streak:2,totalAnswered:2,totalCorrect:1})]]);
-const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(type,fn){if(type==='click')clickHandlers.push(fn)}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history:{replaceState(){}},requestAnimationFrame:fn=>fn()};
-context.window=context;context.addEventListener=()=>{};context.scrollTo=()=>{};
+const entries=[{hash:'',state:null}];let entryIndex=0;
+const history={
+  get state(){return entries[entryIndex].state},
+  replaceState(state,title,url){entries[entryIndex]={state,hash:url||entries[entryIndex].hash};if(url)context.location.hash=url},
+  pushState(state,title,url){entries.splice(++entryIndex);entries.push({state,hash:url});context.location.hash=url},
+  back(){if(entryIndex>0){entryIndex--;context.location.hash=entries[entryIndex].hash}},
+  forward(){if(entryIndex<entries.length-1){entryIndex++;context.location.hash=entries[entryIndex].hash}}
+};
+const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(type,fn){if(type==='click')clickHandlers.push(fn)}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history,requestAnimationFrame:fn=>fn()};
+context.window=context;context.addEventListener=()=>{};context.scrollY=0;context.scrollTo=(x,y)=>{context.scrollY=typeof x==='object'?x.top:y};
 vm.createContext(context);
 for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','math-data.js','math.js','note-data.js','practice.js','text-answer.js','quiz.js','idioms.js','notebook.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
 const run=code=>vm.runInContext(code,context);
@@ -152,7 +160,7 @@ assert.equal(papers.length,9);assert.ok(papers.every(p=>p.kind!=='競賽'));
 assert.ok(!run('catalogHtml()').includes('慈濟'));
 assert.ok(!run('catalogHtml()').includes('進階競賽'));
 // Taps are drafts: no grading, progress, saved data, or feedback until confirmation.
-const click=(selector,dataset)=>clickHandlers.forEach(fn=>fn({target:{closest:s=>s===selector?{dataset}:null}}));
+const click=(selector,dataset)=>clickHandlers.forEach(fn=>fn({target:{closest:s=>s===selector?{dataset}:null},preventDefault(){this.defaultPrevented=true},button:0}));
 run("startExam('confirm',ENGLISH_QUESTIONS.slice(0,2),'英文','確認練習')");
 const beforeDraft=run('JSON.stringify(data)'),savedBeforeDraft=JSON.stringify([...saved]);
 assert.match(main.innerHTML,/data-action="confirm-answer" disabled/);
@@ -299,4 +307,31 @@ run("startExam('math-feedback',[MATH_QUESTIONS.find(q=>q.id==='math-2-original-1
 run("answer(session.items[0].options.indexOf('8/15'));confirmAnswer()");
 assert.ok(main.innerHTML.includes('沒有把除數 4/5 取倒數'));
 run('renderHome()');assert.ok(main.innerHTML.includes('筆記中心'));assert.ok(main.innerHTML.includes('數學解題任務'));
+// A notebook-origin vocab trip restores both the selected note and its previous scroll position.
+for(const id of ['chi-1','chi-6']){
+  run(`history.pushState(null,'','#notes/${id}');route()`);
+  context.scrollY=875;
+  click('[data-note-vocab]',{noteVocab:id});
+  assert.equal(context.location.hash,`#vocab/${id}`);
+  assert.equal(context.scrollY,0);
+  assert.ok(main.innerHTML.includes(`回第 ${Number(id.split('-')[1])} 課筆記`));
+  run('route()');assert.ok(main.innerHTML.includes('data-vocab-return'),'reload keeps the return link');
+  run('history.back();route()');
+  assert.equal(context.location.hash,`#notes/${id}`);
+  assert.equal(context.scrollY,875,'browser back restores the note position');
+  run('history.forward();route()');
+  assert.ok(main.innerHTML.includes('data-vocab-return'),'browser forward keeps the note origin');
+  click('[data-vocab-tab]',{vocabTab:'chi-3'});
+  assert.equal(context.location.hash,'#vocab/chi-3');
+  click('[data-vocab-return]',{});
+  assert.equal(context.location.hash,`#notes/${id}`);
+  assert.equal(context.scrollY,875,'return link restores the original note position after switching lessons');
+  context.scrollY=1100;
+  click('[data-note-vocab]',{noteVocab:id});
+  click('[data-vocab-return]',{});
+  assert.equal(context.scrollY,1100,'a second trip saves the new position');
+}
+run("history.pushState(null,'','#home');route();history.pushState(null,'','#vocab/chi-1');route()");
+assert.ok(main.innerHTML.includes('回探索地圖'));
+assert.ok(!main.innerHTML.includes('data-vocab-return'),'a direct vocab visit has no stale note origin');
 console.log(`PASS: ${bank.length} unique questions; 24 notes in six subjects; 32 math questions with option-specific feedback; 64 photo-verified idioms; IME, confirmation, navigation, wrong-answer recovery, stars and legacy progress.`);

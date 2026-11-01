@@ -1,14 +1,14 @@
-const CACHE_NAME = 'review-island-offline-20261101-notes-1';
+const CACHE_NAME = 'review-island-offline-20261101-notes-return-1';
 const ASSETS = [
   './', './index.html', './manifest.json', './icon.svg',
-  './style.css?v=20261101-notes1', './offline.js?v=20261101-notes1',
-  './data.js?v=20261101-notes1', './bank.js?v=20261101-notes1',
-  './vocab-data.js?v=20261101-notes1', './vocab.js?v=20261101-notes1',
-  './english-data.js?v=20261101-notes1', './english.js?v=20261101-notes1',
-  './math-data.js?v=20261101-notes1', './math.js?v=20261101-notes1',
-  './note-data.js?v=20261101-notes1', './notebook.js?v=20261101-notes1',
-  './practice.js?v=20261101-notes1', './quiz.js?v=20261101-notes1',
-  './text-answer.js?v=20261101-notes1', './app.js?v=20261101-notes1', './idiom-data.js?v=20261101-notes1', './idioms.js?v=20261101-notes1'
+  './style.css?v=20261101-notes-return1', './offline.js?v=20261101-notes-return1',
+  './data.js?v=20261101-notes-return1', './bank.js?v=20261101-notes-return1',
+  './vocab-data.js?v=20261101-notes-return1', './vocab.js?v=20261101-notes-return1',
+  './english-data.js?v=20261101-notes-return1', './english.js?v=20261101-notes-return1',
+  './math-data.js?v=20261101-notes-return1', './math.js?v=20261101-notes-return1',
+  './note-data.js?v=20261101-notes-return1', './notebook.js?v=20261101-notes-return1',
+  './practice.js?v=20261101-notes-return1', './quiz.js?v=20261101-notes-return1',
+  './text-answer.js?v=20261101-notes-return1', './app.js?v=20261101-notes-return1', './idiom-data.js?v=20261101-notes-return1', './idioms.js?v=20261101-notes-return1'
 ];
 
 self.addEventListener('install', event => {

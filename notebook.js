@@ -20,6 +20,10 @@ function noteDue(id){const r=noteRecord(id);return !r||!r.next||r.next<=localStu
 function noteSummary(){const read=STUDY_NOTES.filter(n=>noteRecord(n.id)),due=read.filter(n=>noteDue(n.id));return {read:read.length,due:due.length,total:STUDY_NOTES.length}}
 function noteSubjectHtml(subject){const notes=STUDY_NOTES.filter(n=>n.subject===subject),read=notes.filter(n=>noteRecord(n.id)).length;return `<a href="#notes/${encodeURIComponent(subject)}" class="note-subject ${subject===activeNoteSubject?'active':''}" ${subject===activeNoteSubject?'aria-current="page"':''} style="--note-accent:${NOTE_COLORS[subject]}"><strong>${esc(subject)}</strong><span>${read} / ${notes.length} 已看</span></a>`}
 let activeNoteSubject='國語';
+function vocabNoteOrigin(){
+  const origin=history.state?.vocabReturn;
+  return STUDY_NOTES.some(n=>n.id===origin?.noteId&&n.subject==='國語')&&Number.isFinite(origin.scrollY)?origin:null;
+}
 function renderNotebook(target){
   const chosen=STUDY_NOTES.find(n=>n.id===target);
   const requestedSubject=NOTE_SUBJECTS.includes(target)?target:chosen?.subject;
@@ -37,10 +41,13 @@ function renderNotebook(target){
   <section class="note-section note-example"><h3>看一道怎麼想</h3><strong>${esc(note.worked[0])}</strong><p>${noteText(note.worked[1],note)}</p></section>
   <section class="note-section note-trap"><h3>這裡容易失分</h3><p>${noteText(note.trap,note)}</p></section>
   <section class="note-section note-recall"><h3>先自己回答，再翻開</h3>${note.recall.map(([q,a],i)=>`<details><summary><b>${i+1}</b> ${esc(q)}</summary><p>${noteText(a,note)}</p></details>`).join('')}</section>
-  <div class="note-actions"><button data-note-review="again" data-note-id="${note.id}">還要再練</button><button data-note-review="know" data-note-id="${note.id}">能自己說出來了</button><a class="button" href="${note.href}">${esc(note.linkLabel)} →</a></div>
+  <div class="note-actions"><button data-note-review="again" data-note-id="${note.id}">還要再練</button><button data-note-review="know" data-note-id="${note.id}">能自己說出來了</button><a class="button" href="${note.href}" ${note.subject==='國語'?`data-note-vocab="${note.id}"`:''}>${esc(note.linkLabel)} →</a></div>
   <div class="note-stepper"><a href="#notes/${list[Math.max(0,index-1)].id}" ${index===0?'aria-disabled="true" tabindex="-1"':''}>← 上一篇</a><a href="#notes/${list[Math.min(list.length-1,index+1)].id}" ${index===list.length-1?'aria-disabled="true" tabindex="-1"':''}>下一篇 →</a></div></article></div>
   <p class="note-source">筆記是依這次確認的範圍另寫的複習內容；國語、社會參考南一，自然與數學參考康軒，英文參考翰林 Here We Go 9，成語依家長提供的 1–64 成語講義。數學單元順序依<a href="${MATH_SOURCE}" target="_blank" rel="noopener noreferrer">康軒 115 學年數學特刊</a>核對。以老師公告、孩子手上的課本和講義為最終考試範圍。閱讀標記是自我評估，不代表測驗分數。</p></section>`;
-  updateTop();window.scrollTo(0,0);
+  updateTop();
+  const returning=history.state?.notebookReturn;
+  if(returning?.noteId===note.id&&Number.isFinite(returning.scrollY))requestAnimationFrame(()=>window.scrollTo({top:returning.scrollY,behavior:'instant'}));
+  else window.scrollTo(0,0);
 }
 function markNote(id,status){
   if(!STUDY_NOTES.some(n=>n.id===id)||!['again','know'].includes(status))return;
@@ -48,4 +55,29 @@ function markNote(id,status){
   data[noteReviewKey][id]={status,seen:localStudyDate(today),next:localStudyDate(next)};
   saveData();renderNotebook(id);
 }
-document.addEventListener('click',e=>{const button=e.target.closest('[data-note-review]');if(button)markNote(button.dataset.noteId,button.dataset.noteReview)});
+document.addEventListener('click',e=>{
+  const button=e.target.closest('[data-note-review]');if(button)markNote(button.dataset.noteId,button.dataset.noteReview);
+  if(e.defaultPrevented||e.button>0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+  const entry=e.target.closest('[data-note-vocab]');
+  if(entry){
+    e.preventDefault();
+    const origin={noteId:entry.dataset.noteVocab,scrollY:window.scrollY};
+    history.replaceState({...history.state,notebookReturn:origin},'');
+    history.pushState({vocabReturn:origin},'',`#vocab/${origin.noteId}`);
+    route();window.scrollTo({top:0,behavior:'instant'});return;
+  }
+  const origin=vocabNoteOrigin();
+  if(!origin)return;
+  const tab=e.target.closest('[data-vocab-tab]');
+  if(tab){
+    e.preventDefault();
+    const hash=`#vocab/${tab.dataset.vocabTab}`;
+    if(location.hash!==hash){history.pushState({vocabReturn:origin},'',hash);route();window.scrollTo({top:0,behavior:'instant'})}
+    return;
+  }
+  if(e.target.closest('[data-vocab-return]')){
+    e.preventDefault();
+    history.pushState({notebookReturn:origin},'',`#notes/${origin.noteId}`);
+    route();
+  }
+});
