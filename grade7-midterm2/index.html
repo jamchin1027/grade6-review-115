@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#184c42"><link rel="manifest" href="manifest.webmanifest"><title>國一段考練功房</title>
+<style>
+:root{font-family:system-ui,'Microsoft JhengHei',sans-serif;color:#20302d;background:#f4f6f2;line-height:1.55}*{box-sizing:border-box}body{margin:0}header{background:#184c42;color:white;padding:18px max(20px,calc((100% - 1040px)/2));display:flex;justify-content:space-between;align-items:center;gap:14px}header strong{font-size:21px}header span{font-size:13px;color:#d4e8db}main{max-width:1040px;margin:auto;padding:28px 20px 60px}h1{font-size:26px;margin:0 0 5px}h2{font-size:20px;margin:28px 0 12px}p{margin:8px 0}.muted{color:#52645c;font-size:14px}.tabs,.actions,.filters{display:flex;gap:8px;flex-wrap:wrap}button,select,a.link{font:inherit}button,select,.link{border:1px solid #c7d5cc;background:#fff;color:#203d34;border-radius:6px;padding:10px 14px;cursor:pointer}button:hover,.link:hover{border-color:#24745a}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #dfad32;outline-offset:2px}button.active,.primary{background:#17694e;color:white;border-color:#17694e}button:disabled{opacity:.5;cursor:not-allowed}.intro{border-bottom:1px solid #dce5df;padding-bottom:20px}.tabs{margin:20px 0}.subject{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.unit{background:white;border:1px solid #d7e2da;border-radius:7px;padding:16px;text-align:left}.unit strong,.unit small{display:block}.unit small{color:#60726a;margin-top:5px}.bar{height:7px;background:#dce7df;border-radius:7px;overflow:hidden;margin:16px 0}.bar i{display:block;background:#e4a22c;height:100%}.question{background:white;border:1px solid #d7e2da;border-radius:7px;padding:22px;max-width:790px}.question h1{font-size:21px;margin:15px 0}.options{display:grid;gap:8px;margin:20px 0}.option{text-align:left;display:flex;gap:12px;align-items:flex-start}.letter{flex:none;width:26px;height:26px;text-align:center;border-radius:50%;background:#e8f0e9;font-weight:700}.option.selected{border:2px solid #238363;background:#eef8f2}.option.correct{border-color:#18865b;background:#e9f7ee}.option.wrong{border-color:#c2524c;background:#fff1ef}.explain{border-left:4px solid #dfa52d;background:#fff8e7;padding:12px 16px;margin:18px 0}.actions{justify-content:space-between;align-items:center;margin-top:18px}.papers{border-top:1px solid #dce5df;margin-top:30px;padding-top:8px}.paper{display:block;padding:12px 0;border-bottom:1px solid #dce5df}.paper a{color:#125b47;font-weight:650}.badge{display:inline-block;background:#e6efe9;color:#295946;border-radius:4px;padding:3px 8px;font-size:12px}.result{font-size:34px;font-weight:700;color:#17694e}.notice{background:#fff5d9;border-left:4px solid #dfa52d;padding:12px 15px;margin:18px 0;font-size:14px}@media(max-width:520px){header{align-items:flex-start;flex-direction:column}main{padding:20px 14px 50px}.question{padding:16px}h1{font-size:23px}.question h1{font-size:19px}.actions button{flex:1}}
+</style></head><body><header><div><strong>國一段考練功房</strong><br><span>一年級上學期・第二次段考</span></div><span>國文 康軒 ｜ 社會 翰林</span></header><main id="app"></main>
+<script>
+'use strict';
+// Questions are original practice, not reproductions of school papers.
+const topics=[
+['ch4','國文','第四課 差不多先生傳'],['ch5','國文','第五課 論語選'],['ch6','國文','第六課 那默默的一群'],['geo3','地理','第三章 地形'],['geo4','地理','第四章 海岸與島嶼'],['his3','歷史','第三章 大航海時代'],['his4','歷史','第四章 清帝國統治'],['civ3','公民','第三章 家庭生活'],['civ4','公民','第四章 變遷中的家庭']];
+// Each entry: topic, question, correct answer, three distractors, explanation.
+const rows=[
+['ch4','〈差不多先生傳〉最主要批評哪種態度？','做事馬虎、缺乏精確精神','認真查證與訂正','願意按規定辦事','遇到問題仔細求證','文章以誇張與諷刺，批評凡事以「差不多」敷衍的習慣。'],
+['ch4','作者塑造「差不多先生」主要使用什麼手法？','誇張與諷刺','只陳列統計數字','以神話解釋自然現象','客觀記錄實驗步驟','人物的荒謬經歷經過誇張，目的是反省社會上的馬虎態度。'],
+['ch4','下列哪種行為最符合文章所批評的問題？','未核對藥名就說兩種藥差不多','出門前確認列車時間','計算後重新驗算','不確定時向專家請教','涉及健康安全時，更不能用模糊印象代替查證。'],
+['ch4','文章中人物的遭遇與結果，最適合歸納為什麼？','看似細小的疏忽也可能造成嚴重後果','任何事情都只要大概正確','錯誤只會影響自己','仔細辦事一定浪費時間','作者透過後果提醒讀者：差一點也可能差很多。'],
+['ch4','〈差不多先生傳〉的作者是誰？','胡適','孔子','朱自清','劉墉','〈差不多先生傳〉由胡適撰寫。'],
+['ch5','「學而時習之」的「習」，最接近什麼意思？','溫習、練習','習慣','傳染','聚集','學習之後適時溫習實踐，才能使所學更熟悉。'],
+['ch5','「溫故而知新」強調什麼學習方法？','複習舊知，進而獲得新理解','只背新知，不看舊內容','只依賴別人提供答案','學過一次就永不複習','溫習原有知識，並從中得到新的體會。'],
+['ch5','「知之為知之，不知為不知」強調什麼？','誠實面對自己的知與不知','不知道時假裝知道','只要背誦就不用理解','不必向他人請教','承認自己的不足，才有機會進一步學習。'],
+['ch5','「三人行，必有我師焉」最能說明什麼態度？','觀察他人長短，虛心學習並反省','只向年紀最大的人學習','別人的缺點與自己無關','每個人說的話都不必判斷','取他人的長處學習，也以其缺點反省自己。'],
+['ch5','「學而不思則罔，思而不學則殆」說明什麼？','學習與思考必須互相配合','只要思考，不必學習','只要學習，不必思考','學習和思考毫無關係','只學不思容易迷惘，只思不學容易陷入困惑。'],
+['ch6','〈那默默的一群〉以關懷為出發點，最適合關注什麼？','容易被忽視的人及其付出','只注意最有名的人','只比較誰最富有','排除日常生活的勞動者','閱讀時從具體人物、工作與付出，思考作者如何表達關懷。'],
+['ch6','閱讀描寫人物工作的文章時，哪項最能支持「工作辛勞」的判斷？','文章記載的工作時間、動作及處境','只看文章的標題','憑讀者原本的想像','忽略文中細節','主旨判斷需要回到文章細節，找出時間、行動與環境等證據。'],
+['ch6','面對平日默默付出的工作者，下列哪個做法最貼近尊重？','理解其勞動並以平等態度相待','以職業高低決定是否尊重','認為看不見就不重要','用刻板印象判斷每個人','尊重不同工作及個人處境，是閱讀社會關懷文章的重要延伸。'],
+['ch6','作者透過人物經歷呈現社會現象，閱讀時應如何推論？','把人物遭遇、環境與作者觀點連起來','只憑一個詞判斷全文','忽略敘述中的時間和背景','把個人遭遇直接當作所有人的經歷','先找具體事例，再分辨文章如何由事例引出觀點。'],
+['ch6','文章描寫工作者細節時，最可能產生什麼效果？','讓讀者看見不易察覺的付出','證明每一個人有完全相同的生活','使人物完全失去個別性','讓讀者不必思考事件','具體描寫能幫助讀者理解人物處境，不可過度推論。'],
+['geo3','臺灣地形大致呈現什麼分布？','東部多山，西部平原較廣','東西兩側都是廣大平原','中央全是沙漠','西部全部是高山','臺灣中央與東部山地較多，西部有較廣的平原與丘陵。'],
+['geo3','臺灣高山、地震多，主要與何者有關？','板塊交界與擠壓','位於赤道正上方','極地冰河擠壓','沙漠風力堆積','臺灣位於歐亞板塊與菲律賓海板塊交界，地殼活動活躍。'],
+['geo3','河川流出山區後，因流速降低而堆積形成的扇形地形稱為什麼？','沖積扇','海蝕崖','斷層崖','火山口','河川出山口後坡度變緩，搬運的礫石泥沙堆積形成沖積扇。'],
+['geo3','地圖上等高線愈密，通常表示什麼？','坡度愈陡','坡度愈平緩','海水愈深','人口愈多','相同高度差集中在較短水平距離，代表坡度較陡。'],
+['geo3','臺灣主要平原多位於西部，與哪種作用關係密切？','河川搬運及堆積','冰河刨蝕','流星撞擊','風化完全停止','河川將山區泥沙向下游搬運，在地勢低平處堆積。'],
+['geo4','海浪長期侵蝕岩岸，較可能形成哪種地形？','海蝕崖','沖積扇','河階','盆地','海浪侵蝕海岸岩石，可以形成海蝕崖、海蝕洞等地形。'],
+['geo4','海岸沙洲主要和哪種作用有關？','泥沙搬運與堆積','火山熔岩冷卻','冰河切割','板塊直接抬升山頂','沿岸海流與波浪搬運泥沙，在適合的地方堆積成沙洲。'],
+['geo4','澎湖群島常見的柱狀玄武岩，與何種地質活動相關？','火山熔岩冷卻','河水溶解石灰岩','冰川搬運礫石','珊瑚大量生長','玄武岩與火山作用有關；熔岩冷卻收縮可形成柱狀節理。'],
+['geo4','下列哪個島嶼以珊瑚礁地形聞名？','小琉球','龜山島','綠島','彭佳嶼','小琉球以隆起珊瑚礁地形聞名；其他選項主要與火山作用相關。'],
+['geo4','紅樹林與潮間帶具有什麼重要功能？','提供生物棲地並保護海岸','完全阻止所有颱風','讓所有海水變成淡水','使海岸不再受到人類活動影響','濕地提供生態棲地，也有緩衝風浪及保護海岸等功能。'],
+['his3','17世紀荷蘭人在臺灣南部建立統治據點，最重要的背景是什麼？','發展東亞海上貿易','興建橫貫鐵路','推動臺灣民主選舉','建立清朝行省','大航海時代的歐洲勢力藉由海上據點參與區域貿易。'],
+['his3','17世紀西班牙勢力主要在臺灣哪個區域建立據點？','北部','中央山脈山頂','澎湖南部海底','臺灣東南部全境','西班牙人在臺灣北部建立據點，後來被荷蘭勢力逐出。'],
+['his3','荷蘭統治時期，為了取得鹿皮與稻米、蔗糖等商品，可能推動什麼？','貿易、農業開墾與徵收','全面禁止海外貿易','廢除所有農業活動','進行工業革命','荷蘭統治結合貿易及農業生產，也影響原住民族與移民社會。'],
+['his3','鄭成功攻取臺灣時，結束了哪一個政權在臺灣的統治？','荷蘭東印度公司','日本總督府','清朝臺灣巡撫','西班牙王室對全臺的統治','1662年荷蘭人投降，鄭氏政權進入臺灣。'],
+['his3','大航海時代臺灣成為海上交通節點，主要因為什麼？','位於東亞海上航線附近','位於歐洲內陸','與亞洲航線完全無關','當時沒有海上貿易','臺灣的位置使它與東亞及東南亞海上貿易網絡產生聯繫。'],
+['his4','清廷最初將臺灣納入版圖後，行政上隸屬哪一省？','福建省','廣東省','浙江省','臺灣省','1684年設臺灣府，隸屬福建省；1885年臺灣建省。'],
+['his4','清代大量漢人移入臺灣，最直接帶來哪一種變化？','開墾範圍與聚落逐漸擴大','全臺所有族群立刻消失','臺灣停止農業生產','所有移民都來自同一個地方','移民與開墾使聚落擴張，也改變土地利用與族群關係。'],
+['his4','清廷設立渡臺限制，其主要目的與何者有關？','控制移民與社會秩序','鼓勵所有人自由移居','推動航空交通','取消海峽交通','清廷曾透過渡臺限制管控人口流動，但不同時期規定與執行情形有變。'],
+['his4','清代臺灣建省後，首任巡撫是誰？','劉銘傳','鄭成功','沈葆楨','連橫','臺灣建省後，劉銘傳出任首任巡撫並推動部分近代建設。'],
+['his4','清代臺灣社會發生械鬥或民變，理解原因時應注意什麼？','移民、資源競爭、治理與族群等複雜因素','一定只有單一原因','所有衝突都由同一事件引起','衝突與土地資源毫無關係','歷史事件通常有多重原因，應結合時間與背景判斷。'],
+['civ3','家庭生活中，分擔家務最符合哪種原則？','依能力、時間與情況公平協商','只由特定性別負責','年紀最小的人負責全部工作','誰聲音大就完全不必做','家務可以依能力和情況協商，避免用性別刻板印象分工。'],
+['civ3','家人意見不同時，哪種方式最有助於溝通？','先傾聽彼此理由，再一起討論','不讓對方說話','用威脅代替說明','將問題完全隱瞞','溝通需要傾聽、表達感受並共同尋求可行方案。'],
+['civ3','家庭可能提供的功能包括什麼？','情感支持、照顧與生活教育','只有提供金錢','只能教學校課程','完全不能提供情緒支持','不同家庭的資源和分工不同，仍可能提供照顧、支持及社會化。'],
+['civ3','家人發生衝突時，下列哪個做法較恰當？','描述自己的感受並尊重他人','用辱罵迫使對方接受','一律以暴力處理','拒絕理解彼此需求','用具體事實與感受溝通，有助於共同解決問題。'],
+['civ3','一個孩子由祖父母照顧並同住，最適合的理解是什麼？','這是可能出現的家庭生活型態','這不是家庭','家庭只限父母和子女同住','此家庭必然缺少關愛','家庭組成具有多樣性，不應憑形式判斷是否受到關愛。'],
+['civ4','下列何者最能說明家庭型態多元？','家庭可能有單親、隔代教養或新住民等不同情況','只有核心家庭才是家庭','家庭成員的安排永遠不變','所有家庭必須有一樣的人數','家庭因成員、生活安排及社會變遷而呈現多種樣貌。'],
+['civ4','少子化與高齡化可能使家庭面臨什麼需求？','兒童與長者照顧安排需要調整','所有家庭都不再需要照顧','長者數量必然減少','每個家庭成員的責任完全相同','人口結構改變，可能增加照顧需求並影響家庭分工。'],
+['civ4','尊重新住民家庭，哪項行為最適當？','理解不同文化並避免以國籍貼標籤','模仿口音嘲笑','認為所有新住民都一樣','拒絕了解不同生活背景','尊重個別差異與文化多樣性，避免刻板印象。'],
+['civ4','家人因工作而分住不同地方時，哪個做法有助維持關係？','保持聯繫並協商照顧安排','認定距離使關係不可能維持','完全不討論彼此需求','認為只能由某一性別負責照顧','家庭關係可透過溝通與共同安排維繫。'],
+['civ4','當家庭照顧壓力超過家人能負擔時，可以考慮什麼？','尋求親友、學校或社會福利資源協助','禁止尋求外界幫助','認為只有家庭成員能承擔一切','忽視被照顧者需求','家庭可依需要結合親友、學校與社會資源。']];
+rows.push(
+['ch4','「差不多先生」的姓名、相貌經常讓人覺得熟悉，最可能有什麼用意？','暗示這種態度在生活中並不罕見','說明他只有一張照片','證明他是具名的歷史人物','指出他是專業醫師','虛構人物具有普遍性，藉此反省社會中常見的馬虎現象。'],
+['ch4','文章使用傳記形式，最主要是為了什麼？','借敘述人物一生來諷刺處世態度','證明主人翁真實存在','編寫醫學教材','介紹地理環境','以傳記形式虛構人物經歷，透過荒謬事件表現諷刺。'],
+['ch4','「差不多」態度遇到藥品劑量時，最需要注意什麼？','一字或一個數字的差異都應核實','藥名相似就可以互換','只要外包裝顏色相近即可','不舒服時不用詢問專業人員','醫療用藥需要精確核對，不可把相近視為相同。'],
+['ch4','用誇張手法描寫人物出錯，最能達到什麼效果？','凸顯馬虎的荒謬，引人反省','使錯誤自動變成正確','避免讀者思考','證明細節永遠無關緊要','誇張使特徵鮮明，再以諷刺引導讀者檢視自身。'],
+['ch4','下列哪種寫作目的最符合本文？','批評不求精確、敷衍了事的風氣','教讀者辨認山川','歌頌不假思索的效率','介紹孔子弟子的生平','文章以人物為鏡，批評辦事缺乏嚴謹的態度。'],
+['ch4','小安做實驗時記錯單位，仍覺得大致相同。最適合提醒他什麼？','單位不同可能改變結果，應重新核對','實驗只需大概相近','單位可隨意互換','只核對標題即可','數值與單位都影響結果，仔細查證才能避免失誤。'],
+['ch4','文章諷刺的對象最適合如何理解？','生活中以馬虎敷衍代替認真求證的態度','所有做錯一次的人','只有故事中的醫生','所有不會寫字的人','文章的重點是對普遍態度的反省，不是單純攻擊某一職業。'],
+['ch5','「人不知而不慍」中的「慍」是什麼意思？','生氣、怨怒','歡喜','理解','記住','不因他人不了解自己而怨怒，表現修養。'],
+['ch5','「有朋自遠方來，不亦樂乎」表達什麼心情？','朋友遠道而來的喜悅','討厭朋友來訪','想獨自搬到遠方','為旅行感到悲傷','志同道合的朋友遠道而來，是令人高興的事。'],
+['ch5','「見賢思齊」最接近哪一個行動？','看到他人的優點，努力向他學習','看到他人的長處就嫉妒','只要求別人改進','只記得別人的錯誤','見到賢德的人，要想著向他看齊。'],
+['ch5','「己所不欲，勿施於人」的意思是什麼？','自己不想要的，不要強加給別人','自己想做的就要求所有人做','只要自己高興即可','不要與任何人相處','以自己的感受推想別人的感受，避免將不願承受的事加諸他人。'],
+['ch5','《論語》主要記錄什麼？','孔子及其弟子的言行','一位詩人的旅遊日記','古代醫療處方','臺灣地形調查','《論語》是記錄孔子與弟子言行的儒家典籍，以語錄形式為主。'],
+['ch5','小明發現自己不懂題意，於是向老師請教，最符合哪句話？','知之為知之，不知為不知','人不知而不慍','有朋自遠方來','過而不改','先承認不懂，再主動求教，符合誠實求知的精神。'],
+['ch5','複習舊筆記後，發現不同單元之間的新關聯，最符合什麼？','溫故而知新','掩耳盜鈴','刻舟求劍','緣木求魚','複習已知內容並得到新理解，就是溫故知新。'],
+['ch6','〈那默默的一群〉主要描寫哪一群工作者？','清掃街道的清潔人員','製造飛機的工程師','在海上捕魚的漁夫','在醫院看診的醫師','文章將目光投向平日清掃街道、容易被忽視的工作者。'],
+['ch6','文中將清潔工作者的行動與戰士相連，主要是為了什麼？','凸顯認真面對困難工作的精神','指出清潔工作就是軍事行動','證明兩者職責完全相同','說明街道是一座戰場','透過類比，凸顯堅守崗位與不畏艱苦的精神。'],
+['ch6','作者描寫清潔人員搶著處理難掃的地段，可以推知什麼？','她們盡責並願意承擔辛苦工作','她們不知道如何工作','她們只在意別人觀看','街道永遠不會髒','從面對困難工作的具體行動，可推論其負責態度。'],
+['ch6','「默默」在篇名中最可能強調什麼？','付出往往不張揚，也不易被看見','工作者完全不會說話','工作沒有任何價值','街道上永遠沒有聲音','此處著重工作者安靜而持續的付出，而非字面上不能說話。'],
+['ch6','讀完文章後，哪種行動最能回應作者關懷？','珍惜公共環境並尊重清潔人員','隨手丟垃圾以增加工作機會','依職業高低決定態度','只在有人看見時維護環境','尊重勞動者也要從自己的日常行動做起。'],
+['ch6','文章以具體工作細節刻畫人物，最能幫助讀者什麼？','理解工作辛勞與人物精神','直接知道每個人的家庭背景','證明所有工作環境都相同','不需再閱讀其他段落','具體細節能讓讀者從行動理解人物的處境與精神。'],
+['ch6','作者對文中這群人的態度最可能是什麼？','肯定與敬重','嘲笑與輕視','冷漠與排斥','恐懼與敵意','文章透過工作描寫，表達對默默付出者的肯定。'],
+['geo3','四周較高、中間低平的地形稱為什麼？','盆地','山脈','海蝕崖','沙洲','盆地的典型特徵是周圍地勢較高，中央相對低平。'],
+['geo3','地勢較平坦、海拔較低的廣大區域稱為什麼？','平原','高山','斷崖','峽谷','平原地勢相對低平，是重要聚落與農業分布地區。'],
+['geo3','臺灣山地主要由哪種力量形成？','地殼板塊擠壓隆起','潮汐堆積海水','植物光合作用','地下水蒸發','板塊運動造成地殼擠壓與隆起，是山地形成的重要原因。'],
+['geo3','河流在下游流速變慢時，通常會發生什麼？','搬運的泥沙較易堆積','河水停止流動','所有岩石突然融化','河床一定變成火山','流速減慢時搬運能力下降，泥沙較容易堆積。'],
+['geo3','地圖以不同顏色表示不同高度，稱為什麼圖？','分層設色圖','行政區人口圖','氣溫曲線圖','交通路網圖','分層設色圖以顏色區分不同高度的地勢。'],
+['geo3','溪谷兩側陡峭、谷底狹窄，多與哪項作用有關？','河流向下侵蝕','海水長期堆積','沙丘向上堆積','珊瑚礁隆起','山區河流坡陡流急，向下侵蝕可形成狹窄谷地。'],
+['geo3','若等高線彼此距離較遠，坡度通常如何？','比較平緩','比較陡峭','一定垂直','無法表示地勢','同樣高度差分布在較長水平距離，坡度較平緩。'],
+['geo4','臺灣西部海岸常見沙洲與潟湖，主要與什麼有關？','泥沙堆積作用','冰河侵蝕作用','隕石撞擊','火山爆發形成高山','西部河川輸送泥沙，加上海流與波浪作用，形成堆積海岸。'],
+['geo4','臺灣東部許多海岸緊鄰高山，海岸平原相對如何？','較狹窄','極為寬廣且遍布沙漠','完全不存在','高於所有山脈','東部部分海岸山地近海，平地通常較狹窄。'],
+['geo4','東北角海岸常見岬角與海灣交錯，海岸線通常如何？','較曲折','完全平直','全由沙漠組成','沒有岩石','北部與東北部海岸可見岬灣與岩岸景觀。'],
+['geo4','潮間帶是指哪個範圍？','漲潮時被海水覆蓋、退潮時露出的地帶','終年位於最高山頂','永遠位於深海海溝','只有河川上游','潮間帶隨潮汐漲退交替受到海水覆蓋與暴露。'],
+['geo4','參觀海岸生態時，哪種行為最合適？','觀察生物並避免破壞棲地','大量採集活體帶回家','將垃圾埋進沙灘','踩踏珊瑚礁','減少干擾並帶走垃圾，有助維護海岸生態。'],
+['geo4','沙洲與海岸之間相對平靜的淺水水域常稱為什麼？','潟湖','火山口','盆地','峽灣','沙洲阻隔部分海水後，內側可形成潟湖。'],
+['geo4','綠島的成因主要與什麼有關？','火山作用','珊瑚礁堆積後直接形成整座島','河川沖積形成','冰川搬運形成','綠島屬火山島；與小琉球的隆起珊瑚礁不同。'],
+['his3','荷蘭人統治臺灣南部時，主要據點與今日哪個地區有關？','臺南安平一帶','臺北陽明山山頂','花蓮太魯閣','宜蘭龜山島','荷蘭人在大員建立據點，與今日臺南安平一帶有關。'],
+['his3','西班牙人在臺灣北部傳播的主要宗教是什麼？','天主教','佛教','印度教','道教','西班牙傳教士在臺灣北部傳播天主教。'],
+['his3','荷蘭人與原住民族互動時，可能透過什麼取得貿易商品？','向原住民族交換鹿皮','採購火車車票','要求所有人轉為工業工人','完全斷絕商業往來','鹿皮是當時重要的外銷商品，與原住民族狩獵及貿易有關。'],
+['his3','郭懷一事件主要發生在哪個統治時期？','荷蘭統治時期','日本統治時期','臺灣建省後','戰後民主化時期','郭懷一事件反映部分漢人對荷蘭統治與賦稅的不滿。'],
+['his3','17世紀荷蘭與西班牙勢力來臺，與哪個世界趨勢有關？','歐洲海上擴張與亞洲貿易','網際網路興起','全球航空運輸普及','工業機器人大量使用','大航海時代海上航線擴張，歐洲勢力積極參與亞洲貿易。'],
+['his3','鄭氏政權治理臺灣時，為補充糧食而推行的措施是什麼？','屯墾','廢除所有農耕','興建高速鐵路','停止駐軍','鄭氏政權透過屯墾等方式增加糧食供應。'],
+['his3','認識大航海時代的臺灣，為何也要看原住民族的經驗？','不同群體受到貿易與統治的影響不盡相同','歷史只與統治者有關','原住民族完全沒有參與貿易','各群體在任何地方遭遇都一樣','比較不同群體的處境，有助理解貿易與統治的多面影響。'],
+['his4','清廷將臺灣納入版圖前，擊敗的是哪一政權？','鄭氏政權','荷蘭政權','日本總督府','西班牙政權','1683年清軍在澎湖海戰擊敗鄭氏勢力，後來將臺灣納入版圖。'],
+['his4','清代臺灣原住民族土地受到開墾擴張影響，可能出現什麼現象？','土地與生活空間發生變化','土地使用完全不變','全島在同一天失去所有聚落','族群之間完全沒有接觸','移民開墾改變土地利用，也影響原住民族的生計與生活空間。'],
+['his4','朱一貴事件發生於哪個時期？','清代','荷蘭統治之前','日治時期','戰後時期','朱一貴事件是清代臺灣的重要民變之一。'],
+['his4','牡丹社事件後，清廷對臺灣的治理出現什麼傾向？','更加重視臺灣防務與治理','立刻放棄所有防務','立即進入日本統治','停止與外界往來至今','牡丹社事件促使清廷更重視臺灣的治理與防務。'],
+['his4','清末劉銘傳推動的建設可見哪種近代化特色？','興辦電報與鐵路等設施','使用網路視訊教學','發射人造衛星','建立高速鐵路全線','劉銘傳任內推動部分鐵路、電報等近代建設，但應注意實際完成範圍。'],
+['his4','判斷清代歷史事件先後，下列何者較早？','設臺灣府','臺灣建省','日治時期開始','臺灣光復後','臺灣府設於1684年，臺灣建省在1885年，其餘事件更晚。'],
+['his4','漢人移墾與原住民族互動可能包含什麼？','交易、合作與土地衝突等多種情形','始終只有單一形式','完全沒有任何接觸','所有群體都擁有相同處境','不同地方與時期的互動複雜，不能簡化成單一關係。'],
+['civ3','父母與子女的關係屬於什麼？','親屬關係','陌生人關係','純粹同學關係','只存在於學校的關係','父母子女之間具有親屬關係，形成方式可能涉及出生或收養。'],
+['civ3','家庭成員共享生活支出，最直接涉及哪一種功能？','經濟功能','氣候調節功能','板塊運動功能','外交功能','收入、消費與生活資源的安排，與家庭經濟功能有關。'],
+['civ3','孩子從家人互動中學習禮貌與生活規範，屬於家庭的什麼功能？','教育與社會化','天氣預報','地形侵蝕','海水搬運','家庭是孩子學習生活規範與互動方式的重要場所。'],
+['civ3','家人照顧生病的孩子，主要展現哪種功能？','照顧與保護','控制海流','發明文字','規定全國法律','照顧生病的家人展現家庭支持及照護功能。'],
+['civ3','當家人對外出時間有不同想法，下列哪種溝通較好？','說明理由並一起協商','不聽說明就大聲辱罵','用謊話掩蓋行蹤','以暴力結束對話','表達需求並傾聽對方顧慮，有助取得共識。'],
+['civ3','下列何者最能呈現家庭分工的彈性？','家人依時間與能力輪流做家務','家務只能由女性承擔','最忙的人永遠做全部','家務完全不需要討論','家庭可以根據各成員的時間、能力與需要協商分工。'],
+['civ3','家庭成員遇到困難時互相安慰，主要提供什麼？','情感支持','天氣預報','地殼壓力','海洋資源','傾聽與安慰能提供情感支持，幫助成員面對困難。'],
+['civ4','父母離婚後，孩子主要由其中一方照顧，可能屬於哪種家庭？','單親家庭','一定是隔代教養','一定是頂客家庭','一定不是家庭','單親家庭可能因離婚、喪偶或其他情況形成。'],
+['civ4','由祖父母主要照顧孫子女的情況稱為什麼？','隔代教養','所有人單獨居住','頂客家庭','只有夫妻共同居住','隔代教養指祖父母一代主要擔任照顧孫子女的角色。'],
+['civ4','父母再婚後，與子女共同生活的家庭可能稱為什麼？','重組家庭','必然是隔代家庭','永遠只有一人','不存在的家庭','因婚姻關係變動而重新組成的家庭，常稱重組家庭。'],
+['civ4','一對夫妻雙方工作，選擇不生育子女，常被稱為什麼家庭？','頂客家庭','隔代家庭','大家庭','寄養家庭','頂客通常指雙薪且無子女的家庭，實際情況各有差異。'],
+['civ4','人口老化下，家庭與社會可能需要增加什麼服務？','長期照顧與支持資源','全面取消醫療服務','減少無障礙設施','禁止家人互相照顧','高齡人口增加可能使長期照顧與支持需求提高。'],
+['civ4','對不同家庭型態的同學，應採取什麼態度？','尊重差異，不用家庭背景取笑','只與家庭組成相同的人往來','認為某種家庭一定不幸福','要求每個人公開家務事','家庭型態多樣，應尊重隱私與個別處境。'],
+['civ4','雙薪家庭的家務分工，哪種說法較合理？','可以依彼此工作與照顧時間協調','必須由母親獨自負擔','由某個性別天生決定','不需要考量家人狀況','透過溝通協調家務與照顧，有助減輕個別成員負擔。']
+);
+const bank=rows.map((r,i)=>({id:'g7q'+i,topic:r[0],q:r[1],answers:r.slice(2,6),explain:r[6]}));
+const STORE='g7-midterm2-v1';let data;try{data=JSON.parse(localStorage.getItem(STORE))||{wrong:[],seen:[]}}catch{data={wrong:[],seen:[]}};let view='home',filter='全部',session=null;const app=document.querySelector('#app');
+function save(){try{localStorage.setItem(STORE,JSON.stringify(data))}catch{}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function home(){view='home';session=null;const cats=['全部','國文','地理','歷史','公民'];app.innerHTML=`<section class="intro"><span class="badge">康軒國文 × 翰林社會</span><h1>第二次段考，一題一題練</h1><p class="muted">國文第 4–6 課，社會第 3–4 章。互動題為本站另編考點練習，並非學校歷屆原題。</p></section><div class="tabs">${cats.map(c=>`<button data-filter="${c}" class="${filter===c?'active':''}">${c}</button>`).join('')}</div><div class="filters"><button class="primary" data-start="${filter}">開始${filter==='全部'?'全部':filter}混合練習</button><button data-wrong>錯題重練（${data.wrong.length}）</button><label>題數 <select id="amount"><option value="10">10 題</option><option value="20">20 題</option><option value="99">全部</option></select></label></div><h2>選擇單元</h2><div class="subject">${topics.filter(t=>filter==='全部'||t[1]===filter).map(t=>`<button class="unit" data-topic="${t[0]}"><span class="badge">${t[1]}</span><strong>${t[2]}</strong><small>${bank.filter(q=>q.topic===t[0]).length} 題練習 ›</small></button>`).join('')}</div><section class="papers"><h2>學校歷屆試卷</h2><div class="notice">學校原卷需連網才能開啟，搜尋後請核對版本、課次、學年度及答案。本頁離線可用的 ${bank.length} 題為另編題，不冒稱考古題。</div><div class="paper"><a target="_blank" rel="noopener" href="https://www.google.com/search?q=%E5%9C%8B%E4%B8%80+%E5%9C%8B%E6%96%87+%E5%BA%B7%E8%BB%92+%E5%B7%AE%E4%B8%8D%E5%A4%9A%E5%85%88%E7%94%9F%E5%82%B3+%E8%AB%96%E8%AA%9E%E9%81%B8+%E9%82%A3%E9%BB%98%E9%BB%98%E7%9A%84%E4%B8%80%E7%BE%A4+%E6%AE%B5%E8%80%83+filetype%3Apdf">搜尋康軒國文學校段考原卷 ↗</a><p class="muted">第 4–6 課：差不多先生傳、論語選、那默默的一群</p></div><div class="paper"><a target="_blank" rel="noopener" href="https://www.google.com/search?q=%E5%9C%8B%E4%B8%80+%E7%A4%BE%E6%9C%83+%E7%BF%B0%E6%9E%97+%E5%9C%B0%E5%BD%A2+%E6%B5%B7%E5%B2%B8+%E5%A4%A7%E8%88%AA%E6%B5%B7+%E5%AE%B6%E5%BA%AD+%E7%AC%AC%E4%BA%8C%E6%AC%A1%E6%AE%B5%E8%80%83+filetype%3Apdf">搜尋翰林社會學校段考原卷 ↗</a><p class="muted">地理、歷史與公民，請核對各校考試範圍</p></div></section><p class="muted">作答紀錄與錯題保存在此瀏覽器。清除瀏覽器資料或更換裝置後可能消失。</p>`}
+function begin(pool,title){if(!pool.length){alert('目前沒有錯題，先去練習吧！');return}const count=Number(document.querySelector('#amount')?.value||10);const unseen=shuffle(pool.filter(q=>!data.seen.includes(q.id))),seen=shuffle(pool.filter(q=>data.seen.includes(q.id)));const items=[...unseen,...seen].slice(0,count).map(q=>({...q,options:shuffle(q.answers)}));session={title,items,index:0,selected:null,confirmed:false,correct:0};view='quiz';question()}
+function question(){const s=session,q=s.items[s.index],t=topics.find(t=>t[0]===q.topic),answer=q.answers[0];app.innerHTML=`<div class="actions"><button data-home>← 返回單元</button><span class="muted">${esc(s.title)} · ${s.index+1} / ${s.items.length}</span></div><div class="bar"><i style="width:${100*(s.index+(s.confirmed?1:0))/s.items.length}%"></i></div><section class="question"><span class="badge">${esc(t[1])}・${esc(t[2])}</span><h1>${esc(q.q)}</h1><div class="options">${q.options.map((o,i)=>`<button class="option ${s.confirmed?(o===answer?'correct':i===s.selected?'wrong':''):i===s.selected?'selected':''}" data-option="${i}" ${s.confirmed?'disabled':''} aria-pressed="${i===s.selected}"><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div>${s.confirmed?`<div class="explain"><strong>${q.options[s.selected]===answer?'答對了！':'再記一次'}</strong><p>正確答案：${esc(answer)}</p><p>${esc(q.explain)}</p></div>`:''}<div class="actions"><span class="muted">${s.confirmed?'已確認答案':'選擇後請按確認'}</span>${s.confirmed?`<button class="primary" data-next>${s.index===s.items.length-1?'看結果':'下一題 →'}</button>`:`<button class="primary" data-confirm ${s.selected===null?'disabled':''}>確認答案</button>`}</div></section>`}
+function finish(){view='result';const s=session;app.innerHTML=`<section class="question"><span class="badge">本回合完成</span><h1>${esc(s.title)}</h1><div class="result">${s.correct} / ${s.items.length}</div><p>已完成本回合。錯題會留在這個裝置上，答對後自動移除。</p><div class="actions"><button data-home class="primary">返回單元</button><button data-wrong>錯題重練（${data.wrong.length}）</button></div></section>`}
+app.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-home')){home();return}if(b.dataset.filter){filter=b.dataset.filter;home();return}if(b.dataset.topic){const t=topics.find(t=>t[0]===b.dataset.topic);begin(bank.filter(q=>q.topic===t[0]),t[2]);return}if(b.dataset.start){const c=b.dataset.start;begin(bank.filter(q=>c==='全部'||topics.find(t=>t[0]===q.topic)[1]===c),c+'混合練習');return}if(b.hasAttribute('data-wrong')){begin(bank.filter(q=>data.wrong.includes(q.id)),'錯題重練');return}if(b.dataset.option!==undefined){session.selected=Number(b.dataset.option);question();return}if(b.hasAttribute('data-confirm')){const q=session.items[session.index],correct=q.options[session.selected]===q.answers[0];session.confirmed=true;if(correct)session.correct++;data.seen=[...new Set([...data.seen,q.id])];data.wrong=data.wrong.filter(id=>id!==q.id);if(!correct)data.wrong.push(q.id);save();question();return}if(b.hasAttribute('data-next')){session.index++;if(session.index>=session.items.length)finish();else{session.selected=null;session.confirmed=false;question()}window.scrollTo(0,0)}});home();
+</script><script>
+if(/^https?:$/.test(location.protocol)){
+  const download=document.createElement('a');download.href='./index.html';download.download='國一上第二次段考練功房.html';download.textContent='下載單機檔';download.className='link';document.querySelector('header').append(download);
+}
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register('./sw.js').then(()=>navigator.serviceWorker.ready).then(reg=>{
+    const show=()=>{let el=document.getElementById('offline-ready');if(!el){el=document.createElement('div');el.id='offline-ready';el.className='notice';document.getElementById('app').before(el)}el.textContent='離線版已下載到這個瀏覽器，可在此裝置離線使用。';};
+    if(navigator.serviceWorker.controller)show();else navigator.serviceWorker.addEventListener('controllerchange',show,{once:true});
+  }).catch(()=>{});
+}
+</script></body></html>
