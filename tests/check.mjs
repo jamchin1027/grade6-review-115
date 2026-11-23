@@ -15,7 +15,7 @@ const history={
 const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(type,fn){if(type==='click')clickHandlers.push(fn)}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history,requestAnimationFrame:fn=>fn()};
 context.window=context;context.addEventListener=()=>{};context.scrollY=0;context.scrollTo=(x,y)=>{context.scrollY=typeof x==='object'?x.top:y};
 vm.createContext(context);
-for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','math-data.js','math.js','extra-data.js','note-data.js','practice.js','text-answer.js','quiz.js','idioms.js','notebook.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','math-data.js','math.js','extra-data.js','note-data.js','practice.js','text-answer.js','quiz.js','idioms.js','notebook.js','after-exam.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
 const run=code=>vm.runInContext(code,context);
 const {QUESTION_BANK:bank,PAPERS:papers,LESSONS:lessons,DRILL:drill}=context;
 assert.equal(bank.length,1446);
@@ -340,6 +340,30 @@ run("startExam('math-feedback',[MATH_QUESTIONS.find(q=>q.id==='math-2-original-1
 run("answer(session.items[0].options.indexOf('8/15'));confirmAnswer()");
 assert.ok(main.innerHTML.includes('沒有把除數 4/5 取倒數'));
 run('renderHome()');assert.ok(main.innerHTML.includes('筆記中心'));assert.ok(main.innerHTML.includes('數學解題任務'));
+run("location.hash='#after-exam';route()");
+assert.ok(main.innerHTML.includes('考後升級基地'));
+assert.ok(main.innerHTML.includes('圈題目 → 找證據 → 驗選項'));
+const missions=run('AFTER_EXAM_STATIONS');
+assert.equal(missions.length,6);
+for(const station of missions){
+  assert.equal(station.questions.length,3,station.id);
+  for(const q of station.questions){assert.equal(q.options.length,4,q.q);assert.equal(q.why.length,4,q.q);assert.ok(q.answer>=0&&q.answer<4,q.q);}
+}
+let station=missions.find(x=>x.id==='water-path');
+click('[data-after-answer]',{afterAnswer:station.id,option:String((station.questions[0].answer+1)%4)});
+assert.equal(run("data.afterExam['water-path'].streak"),0,'wrong answer resets the two-answer streak');
+assert.ok(main.innerHTML.includes('蒸散的起點是植物'),'wrong answer explains the specific misconception');
+assert.ok(JSON.parse(saved.get('review-island-115-v1')).afterExam['water-path'],'mission progress auto-saves locally');
+click('[data-after-next]',{afterNext:station.id});
+station=missions.find(x=>x.id==='water-path');
+click('[data-after-answer]',{afterAnswer:station.id,option:String(station.questions[1].answer)});
+assert.equal(run("data.afterExam['water-path'].streak"),1);
+click('[data-after-next]',{afterNext:station.id});
+station=missions.find(x=>x.id==='water-path');
+click('[data-after-answer]',{afterAnswer:station.id,option:String(station.questions[2].answer)});
+assert.equal(run("data.afterExam['water-path'].cleared"),true,'badge requires two consecutive correct answers on different prompts');
+assert.ok(main.innerHTML.includes('徽章點亮'));
+assert.ok(JSON.parse(saved.get('review-island-115-v1')).afterExam['water-path'].cleared);
 // A notebook-origin vocab trip restores both the selected note and its previous scroll position.
 for(const id of ['chi-1','chi-6']){
   run(`history.pushState(null,'','#notes/${id}');route()`);
@@ -376,4 +400,6 @@ for(const match of html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)\?v=[^"]+)"/g)
   assert.ok(assets.includes('./'+match[1]),`offline cache missing ${match[1]}`);
 }
 assert.ok(assets.some(asset=>asset.startsWith('./extra-data.js?')),'new questions are available offline');
+assert.ok(assets.some(asset=>asset.startsWith('./after-exam.js?')),'after-exam missions are available offline');
+assert.ok(assets.some(asset=>asset.startsWith('./after-exam.css?')),'after-exam styles are available offline');
 console.log(`PASS: ${bank.length} unique questions; 24 notes in six subjects; 32 math questions with option-specific feedback; 64 photo-verified idioms; IME, confirmation, navigation, wrong-answer recovery, stars and legacy progress.`);
