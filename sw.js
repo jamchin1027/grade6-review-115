@@ -1,15 +1,15 @@
-const CACHE_NAME = 'review-island-offline-20261123-afterexam1';
+const CACHE_NAME = 'review-island-offline-20261124-papers1';
 const ASSETS = [
   './', './index.html', './manifest.json', './icon.svg',
-  './style.css?v=20261123-afterexam1', './offline.js?v=20261123-afterexam1',
-  './data.js?v=20261123-afterexam1', './bank.js?v=20261123-afterexam1',
-  './vocab-data.js?v=20261123-afterexam1', './vocab.js?v=20261123-afterexam1',
-  './english-data.js?v=20261123-afterexam1', './english.js?v=20261123-afterexam1',
-  './math-data.js?v=20261123-afterexam1', './math.js?v=20261123-afterexam1',
-  './extra-data.js?v=20261123-afterexam1', './after-exam.js?v=20261123-afterexam1', './after-exam.css?v=20261123-afterexam1',
-  './note-data.js?v=20261123-afterexam1', './notebook.js?v=20261123-afterexam1',
-  './practice.js?v=20261123-afterexam1', './quiz.js?v=20261123-afterexam1',
-  './text-answer.js?v=20261123-afterexam1', './app.js?v=20261123-afterexam1', './idiom-data.js?v=20261123-afterexam1', './idioms.js?v=20261123-afterexam1'
+  './style.css?v=20261124-papers1', './offline.js?v=20261124-papers1',
+  './data.js?v=20261124-papers1', './bank.js?v=20261124-papers1',
+  './vocab-data.js?v=20261124-papers1', './vocab.js?v=20261124-papers1',
+  './english-data.js?v=20261124-papers1', './english.js?v=20261124-papers1',
+  './math-data.js?v=20261124-papers1', './math.js?v=20261124-papers1',
+  './extra-data.js?v=20261124-papers1', './after-papers.js?v=20261124-papers1', './after-exam.js?v=20261124-papers1', './after-exam.css?v=20261124-papers1',
+  './note-data.js?v=20261124-papers1', './notebook.js?v=20261124-papers1',
+  './practice.js?v=20261124-papers1', './quiz.js?v=20261124-papers1',
+  './text-answer.js?v=20261124-papers1', './app.js?v=20261124-papers1', './idiom-data.js?v=20261124-papers1', './idioms.js?v=20261124-papers1'
 ];
 
 self.addEventListener('install', event => {

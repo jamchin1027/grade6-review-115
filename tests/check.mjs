@@ -15,7 +15,7 @@ const history={
 const context = {console,Math,Date,JSON,Map,Set,setTimeout,clearTimeout,document:{querySelector:s=>s==='#main'?main:s==='#wrongCount'?wrongCount:null,addEventListener(type,fn){if(type==='click')clickHandlers.push(fn)}},localStorage:{getItem:k=>saved.get(k)||null,setItem:(k,v)=>saved.set(k,v)},location:{hash:''},history,requestAnimationFrame:fn=>fn()};
 context.window=context;context.addEventListener=()=>{};context.scrollY=0;context.scrollTo=(x,y)=>{context.scrollY=typeof x==='object'?x.top:y};
 vm.createContext(context);
-for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','math-data.js','math.js','extra-data.js','note-data.js','practice.js','text-answer.js','quiz.js','idioms.js','notebook.js','after-exam.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
+for(const file of ['data.js','idiom-data.js','bank.js','vocab-data.js','vocab.js','english-data.js','english.js','math-data.js','math.js','extra-data.js','note-data.js','practice.js','text-answer.js','quiz.js','idioms.js','notebook.js','after-papers.js','after-exam.js','app.js']) vm.runInContext(fs.readFileSync(new URL('../'+file,import.meta.url),'utf8'),context,{filename:file});
 const run=code=>vm.runInContext(code,context);
 const {QUESTION_BANK:bank,PAPERS:papers,LESSONS:lessons,DRILL:drill}=context;
 assert.equal(bank.length,1446);
@@ -350,19 +350,25 @@ for(const station of missions){
   for(const q of station.questions){assert.equal(q.options.length,4,q.q);assert.equal(q.why.length,4,q.q);assert.ok(q.answer>=0&&q.answer<4,q.q);}
 }
 let station=missions.find(x=>x.id==='water-path');
-click('[data-after-answer]',{afterAnswer:station.id,option:String((station.questions[0].answer+1)%4)});
+click('[data-after-pick]',{afterPick:station.id,option:String((station.questions[0].answer+1)%4)});
+assert.equal(run("data.afterExam['water-path'].answered"),false);
+click('[data-after-answer]',{afterAnswer:station.id});
 assert.equal(run("data.afterExam['water-path'].streak"),0,'wrong answer resets the two-answer streak');
 assert.ok(main.innerHTML.includes('蒸散的起點是植物'),'wrong answer explains the specific misconception');
 assert.ok(JSON.parse(saved.get('review-island-115-v1')).afterExam['water-path'],'mission progress auto-saves locally');
 click('[data-after-next]',{afterNext:station.id});
 station=missions.find(x=>x.id==='water-path');
-click('[data-after-answer]',{afterAnswer:station.id,option:String(station.questions[1].answer)});
+click('[data-after-pick]',{afterPick:station.id,option:String(station.questions[1].answer)});
+assert.equal(run("data.afterExam['water-path'].answered"),false);
+click('[data-after-answer]',{afterAnswer:station.id});
 assert.equal(run("data.afterExam['water-path'].streak"),1);
 click('[data-after-next]',{afterNext:station.id});
 station=missions.find(x=>x.id==='water-path');
-click('[data-after-answer]',{afterAnswer:station.id,option:String(station.questions[2].answer)});
+click('[data-after-pick]',{afterPick:station.id,option:String(station.questions[2].answer)});
+assert.equal(run("data.afterExam['water-path'].answered"),false);
+click('[data-after-answer]',{afterAnswer:station.id});
 assert.equal(run("data.afterExam['water-path'].cleared"),true,'badge requires two consecutive correct answers on different prompts');
-assert.ok(main.innerHTML.includes('徽章點亮'));
+assert.ok(main.innerHTML.includes('暖身答對了'));
 assert.ok(JSON.parse(saved.get('review-island-115-v1')).afterExam['water-path'].cleared);
 // A notebook-origin vocab trip restores both the selected note and its previous scroll position.
 for(const id of ['chi-1','chi-6']){
