@@ -1,14 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const release = path.join(root, 'downloads');
 const version = '20261128-final3';
 const htmlPath = path.join(release, 'grade6-final-offline.html');
-const readmePath = path.join(release, 'offline-readme-zh.txt');
-const zipPath = path.join(root, 'grade6-final-offline.zip');
 const source = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const scriptFiles = [...source.matchAll(/<script src="([^"]+\.js)\?v=[^"]+" defer><\/script>/g)]
   .map(match => match[1])
@@ -31,20 +28,7 @@ const scripts = scriptFiles.map(file => {
 }).join('\n');
 html = html.replace('</body>', `${scripts}\n</body>`);
 html = html.replace('<small id="offlineStatus">準備離線版…</small>', '<small id="offlineStatus">單機版 · 離線可玩</small>');
+html = html.replace('<a href="grade6-final-app.zip" download>下載 APP</a>', '');
 fs.mkdirSync(release, { recursive: true });
 fs.writeFileSync(htmlPath, html, 'utf8');
-fs.writeFileSync(readmePath, [
-  '六上期末升級打怪版｜單機版',
-  '',
-  '使用方式：解壓縮後，用 Chrome、Edge 或 Firefox 開啟 grade6-final-offline.html。',
-  '開啟後不需要網路；五科題目與教學已包含在單一 HTML 檔案中。',
-  '',
-  '遊戲進度只保存在目前瀏覽器的本機資料中，不會上傳。若更換裝置或瀏覽器，',
-  '請先到「學習紀錄備份」匯出 JSON，再於另一台裝置匯入。',
-  '',
-  '範圍：國語 7–10 課、數學單元 5–6、英文 Unit 3、社會第三單元、自然第三單元。'
-].join('\n'), 'utf8');
-if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
-execFileSync('tar.exe', ['-a', '-c', '-f', zipPath, '-C', release, 'grade6-final-offline.html', 'offline-readme-zh.txt']);
 console.log(`Built ${htmlPath} (${fs.statSync(htmlPath).size} bytes)`);
-console.log(`Built ${zipPath} (${fs.statSync(zipPath).size} bytes)`);

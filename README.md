@@ -34,7 +34,7 @@ Repository → Settings → Pages → Build and deployment → Deploy from a bra
 
 首頁是 `index.html`，無 build step、框架或第三方 runtime dependency。樣式及字型設有系統字型 fallback。
 
-網站首頁的「下載單機版」會下載 `grade6-final-offline.zip`，內含將程式與樣式全部嵌入的單一 HTML 和中文說明。解壓後直接以瀏覽器開啟 HTML，不需網路或安裝；進度仍存在該瀏覽器本機。原始網站更新後，執行 `node tools/build-offline.mjs` 重新產生下載包。
+網站右上角「下載 APP」會下載 `grade6-final-app.zip`。解壓縮後雙擊 `Grade6Review.exe`，以獨立 Windows 桌面視窗離線使用，不會開啟一般瀏覽器。需要 Microsoft Edge WebView2 Runtime；Windows 11 通常已包含。遊戲進度儲存在目前 Windows 使用者的本機 APP 資料夾，不會上傳。更新題庫後執行 `powershell -ExecutionPolicy Bypass -File tools/build-windows-app.ps1` 重新打包。
 
 ## 六上期末升級打怪（2026-11-28）
 
