@@ -1,15 +1,15 @@
-const CACHE_NAME = 'review-island-offline-20261124-papers1';
+const CACHE_NAME = 'review-island-offline-20261128-final2';
 const ASSETS = [
   './', './index.html', './manifest.json', './icon.svg',
-  './style.css?v=20261124-papers1', './offline.js?v=20261124-papers1',
-  './data.js?v=20261124-papers1', './bank.js?v=20261124-papers1',
-  './vocab-data.js?v=20261124-papers1', './vocab.js?v=20261124-papers1',
-  './english-data.js?v=20261124-papers1', './english.js?v=20261124-papers1',
-  './math-data.js?v=20261124-papers1', './math.js?v=20261124-papers1',
-  './extra-data.js?v=20261124-papers1', './after-papers.js?v=20261124-papers1', './after-exam.js?v=20261124-papers1', './after-exam.css?v=20261124-papers1',
-  './note-data.js?v=20261124-papers1', './notebook.js?v=20261124-papers1',
-  './practice.js?v=20261124-papers1', './quiz.js?v=20261124-papers1',
-  './text-answer.js?v=20261124-papers1', './app.js?v=20261124-papers1', './idiom-data.js?v=20261124-papers1', './idioms.js?v=20261124-papers1'
+  './style.css?v=20261128-final2', './after-exam.css?v=20261128-final2', './final-game.css?v=20261128-final2', './offline.js?v=20261128-final2',
+  './data.js?v=20261128-final2', './bank.js?v=20261128-final2',
+  './vocab-data.js?v=20261128-final2', './vocab.js?v=20261128-final2',
+  './english-data.js?v=20261128-final2', './english.js?v=20261128-final2',
+  './math-data.js?v=20261128-final2', './math.js?v=20261128-final2',
+  './extra-data.js?v=20261128-final2', './after-papers.js?v=20261128-final2', './after-exam.js?v=20261128-final2', './after-exam.css?v=20261128-final2', './final-review.js?v=20261128-final2',
+  './note-data.js?v=20261128-final2', './notebook.js?v=20261128-final2',
+  './practice.js?v=20261128-final2', './quiz.js?v=20261128-final2',
+  './text-answer.js?v=20261128-final2', './app.js?v=20261128-final2', './idiom-data.js?v=20261128-final2', './idioms.js?v=20261128-final2'
 ];
 
 self.addEventListener('install', event => {

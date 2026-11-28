@@ -1,12 +1,12 @@
 {
-  "name": "複習小島｜六年級期中複習",
+  "name": "複習小島｜六年級期末複習",
   "short_name": "複習小島",
   "lang": "zh-Hant",
-  "start_url": "./?v=20261101-notes1#home",
+  "start_url": "./?v=20261128-final2#final-review",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f6f6ef",
   "theme_color": "#173e36",
-  "description": "南一國語與社會、康軒數學與自然、翰林英文及講義成語的六科期中筆記與練習。",
+  "description": "115 學年六上指定期末範圍教學與練習。",
   "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
