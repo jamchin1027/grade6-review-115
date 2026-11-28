@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
-const main = {innerHTML:''}, wrongCount={textContent:''}, clickHandlers=[];
+const main = {innerHTML:'',querySelector(selector){return selector==='.game-hero-copy'?{insertAdjacentHTML:(position,html)=>{main.innerHTML+=html}}:null}}, wrongCount={textContent:''}, clickHandlers=[];
 const saved = new Map([['review-island-115-v1',JSON.stringify({done:{'chi-1':true},stats:{'chi-1':{seen:2,correct:1}},wrong:{},streak:2,totalAnswered:2,totalCorrect:1})]]);
 const entries=[{hash:'',state:null}];let entryIndex=0;
 const history={
@@ -388,6 +388,14 @@ run("data.finalProgress.chi={...data.finalProgress.chi,submitted:true,score:3};r
 assert.equal(run("data.finalProgress.chi.bestScore"),10,'replaying with a lower score preserves the best result');
 assert.equal(run('data.finalXp'),95,'a lower replay does not remove or duplicate XP');
 assert.ok(main.innerHTML.includes('歷來最佳 10/10'));
+assert.ok(main.innerHTML.includes('grade6-final-offline.zip'),'online page exposes the offline download');
+run("location.protocol='file:';renderFinalReview();delete location.protocol");
+assert.ok(!main.innerHTML.includes('grade6-final-offline.zip'),'standalone page has no link to a missing ZIP');
+const standalone=fs.readFileSync(new URL('../downloads/grade6-final-offline.html',import.meta.url),'utf8');
+assert.equal((standalone.match(/<script data-bundled-from=/g)||[]).length,20,'standalone bundles every app script');
+assert.equal((standalone.match(/<style data-bundled-from=/g)||[]).length,3,'standalone bundles every stylesheet');
+assert.ok(!/<script src=|rel="stylesheet" href=/.test(standalone),'standalone has no external runtime assets');
+assert.ok(standalone.includes("if(location.protocol!=='file:')"),'standalone suppresses the web-only download link');
 const swContext={self:{addEventListener(){}}};
 vm.createContext(swContext);
 vm.runInContext(fs.readFileSync(new URL('../sw.js',import.meta.url),'utf8'),swContext);

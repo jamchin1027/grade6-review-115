@@ -34,6 +34,8 @@ Repository → Settings → Pages → Build and deployment → Deploy from a bra
 
 首頁是 `index.html`，無 build step、框架或第三方 runtime dependency。樣式及字型設有系統字型 fallback。
 
+網站首頁的「下載單機版」會下載 `grade6-final-offline.zip`，內含將程式與樣式全部嵌入的單一 HTML 和中文說明。解壓後直接以瀏覽器開啟 HTML，不需網路或安裝；進度仍存在該瀏覽器本機。原始網站更新後，執行 `node tools/build-offline.mjs` 重新產生下載包。
+
 ## 六上期末升級打怪（2026-11-28）
 
 首頁改為六上期末冒險，只保留家長指定範圍：國語第 7–10 課、數學第 5–6 單元、英文 Unit 3、社會第三單元、自然第三單元。五區各有教學招式和 10 道本站另編題，答題後逐題顯示解析。答對與首次全對會累積探險 XP；重玩只採計各區最佳分數。期中考卷用於調整教法，不將期中題目放進期末題庫。

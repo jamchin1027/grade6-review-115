@@ -1,15 +1,15 @@
-const CACHE_NAME = 'review-island-offline-20261128-final2';
+const CACHE_NAME = 'review-island-offline-20261128-final3';
 const ASSETS = [
   './', './index.html', './manifest.json', './icon.svg',
-  './style.css?v=20261128-final2', './after-exam.css?v=20261128-final2', './final-game.css?v=20261128-final2', './offline.js?v=20261128-final2',
-  './data.js?v=20261128-final2', './bank.js?v=20261128-final2',
-  './vocab-data.js?v=20261128-final2', './vocab.js?v=20261128-final2',
-  './english-data.js?v=20261128-final2', './english.js?v=20261128-final2',
-  './math-data.js?v=20261128-final2', './math.js?v=20261128-final2',
-  './extra-data.js?v=20261128-final2', './after-papers.js?v=20261128-final2', './after-exam.js?v=20261128-final2', './after-exam.css?v=20261128-final2', './final-review.js?v=20261128-final2',
-  './note-data.js?v=20261128-final2', './notebook.js?v=20261128-final2',
-  './practice.js?v=20261128-final2', './quiz.js?v=20261128-final2',
-  './text-answer.js?v=20261128-final2', './app.js?v=20261128-final2', './idiom-data.js?v=20261128-final2', './idioms.js?v=20261128-final2'
+  './style.css?v=20261128-final3', './after-exam.css?v=20261128-final3', './final-game.css?v=20261128-final3', './offline.js?v=20261128-final3',
+  './data.js?v=20261128-final3', './bank.js?v=20261128-final3',
+  './vocab-data.js?v=20261128-final3', './vocab.js?v=20261128-final3',
+  './english-data.js?v=20261128-final3', './english.js?v=20261128-final3',
+  './math-data.js?v=20261128-final3', './math.js?v=20261128-final3',
+  './extra-data.js?v=20261128-final3', './after-papers.js?v=20261128-final3', './after-exam.js?v=20261128-final3', './after-exam.css?v=20261128-final3', './final-review.js?v=20261128-final3',
+  './note-data.js?v=20261128-final3', './notebook.js?v=20261128-final3',
+  './practice.js?v=20261128-final3', './quiz.js?v=20261128-final3',
+  './text-answer.js?v=20261128-final3', './app.js?v=20261128-final3', './idiom-data.js?v=20261128-final3', './idioms.js?v=20261128-final3'
 ];
 
 self.addEventListener('install', event => {
